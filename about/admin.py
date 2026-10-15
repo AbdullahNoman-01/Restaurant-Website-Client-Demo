@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TeamMember, AboutStat, Milestone
+from .models import TeamMember, AboutStat, Milestone, Pillar, AboutStory
 
 @admin.register(TeamMember)
 class TeamMemberAdmin(admin.ModelAdmin):
@@ -18,3 +18,13 @@ class MilestoneAdmin(admin.ModelAdmin):
     list_display = ('year', 'title', 'order')
     list_editable = ('order',)
     search_fields = ('year', 'title', 'description')
+
+@admin.register(Pillar)
+class PillarAdmin(admin.ModelAdmin):
+    list_display = ('number', 'title', 'order')
+    list_editable = ('order',)
+    search_fields = ('title', 'description')
+
+@admin.register(AboutStory)
+class AboutStoryAdmin(admin.ModelAdmin):
+    list_display = ('heading', 'quote_author')

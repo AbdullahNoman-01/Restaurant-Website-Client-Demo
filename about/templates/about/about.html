@@ -41,7 +41,7 @@
         </div>
     </section>
 
-    <!-- 2. Heritage Story Section -->
+    <!-- 2. Heritage Story Section (From AboutStory Model) -->
     <section class="about-story-section" id="aboutStory">
         <div class="about-container">
             <div class="story-grid">
@@ -49,31 +49,30 @@
                 <div class="story-narrative">
                     <div class="section-tag">
                         <span class="tag-line"></span>
-                        <span class="tag-title">OUR STORY & PHILOSOPHY</span>
+                        <span class="tag-title">{{ story.tagline|default:"OUR STORY & PHILOSOPHY" }}</span>
                     </div>
                     <h2 class="section-heading">
-                        Where Seasonal Terroir Meets <br>
-                        <span class="heading-gold">Contemporary Elegance</span>
+                        {{ story.heading|default:"Where Seasonal Terroir Meets Contemporary Elegance" }}
                     </h2>
                     <p class="story-lead">
-                        Housed within a grand restored Victorian banking hall on Manchester's historic King Street, <strong>The Chesterfield</strong> was conceived with a single, uncompromising vision: to celebrate the vibrant diversity of the British Isles through modern culinary technique.
+                        {{ story.lead_paragraph|linebreaksbr }}
                     </p>
                     <p class="story-body">
-                        We work closely with heritage farmers in Cumbria, coastal day-boat fishermen in Cornwall, and artisanal foragers across Yorkshire. Each morning, our kitchen brigade transforms these rare, honest ingredients into dishes that honor the natural rhythm of the seasons.
+                        {{ story.body_paragraph|linebreaksbr }}
                     </p>
 
                     <!-- Quote Block -->
                     <div class="story-quote-card">
                         <div class="quote-mark">“</div>
                         <blockquote class="quote-text">
-                            True gastronomy is not about needless complexity; it is an honest tribute to the soil, the seasons, and the unspoken communion between guests around a shared table.
+                            {{ story.quote_text }}
                         </blockquote>
                         <div class="quote-author-info">
                             <div class="author-details">
-                                <span class="author-name">Arthur Pendelton</span>
-                                <span class="author-title">Executive Head Chef & Co-Founder</span>
+                                <span class="author-name">{{ story.quote_author }}</span>
+                                <span class="author-title">{{ story.quote_author_title }}</span>
                             </div>
-                            <div class="author-signature">Arthur Pendelton</div>
+                            <div class="author-signature">{{ story.quote_author }}</div>
                         </div>
                     </div>
                 </div>
@@ -83,13 +82,21 @@
                     <div class="collage-container">
                         <!-- Primary Main Photo -->
                         <div class="collage-item collage-primary">
+                            {% if story.get_primary_image %}
+                            <img src="{{ story.get_primary_image }}" alt="Executive Chef plating culinary masterpiece" loading="lazy">
+                            {% else %}
                             <img src="{% static 'about/media/chef_story.jpg' %}" alt="Executive Chef plating culinary masterpiece" loading="lazy">
+                            {% endif %}
                             <div class="image-frame-gold"></div>
                         </div>
 
                         <!-- Secondary Overlapping Photo -->
                         <div class="collage-item collage-secondary">
+                            {% if story.get_secondary_image %}
+                            <img src="{{ story.get_secondary_image }}" alt="The Chesterfield dining room ambience" loading="lazy">
+                            {% else %}
                             <img src="{% static 'about/media/restaurant_interior.jpg' %}" alt="The Chesterfield dining room ambience" loading="lazy">
+                            {% endif %}
                             <div class="image-frame-gold"></div>
                         </div>
 
@@ -108,7 +115,7 @@
         </div>
     </section>
 
-    <!-- 3. Key Stats Section -->
+    <!-- 3. Key Stats Section (From AboutStat Model) -->
     <section class="about-stats-section" id="aboutStats">
         <div class="about-container">
             <div class="stats-grid">
@@ -120,12 +127,16 @@
                     <div class="stat-divider"></div>
                     <p class="stat-label">{{ stat.label }}</p>
                 </div>
+                {% empty %}
+                <div class="stat-card">
+                    <p class="stat-label">No stats added yet.</p>
+                </div>
                 {% endfor %}
             </div>
         </div>
     </section>
 
-    <!-- 4. Sacred Pillars / Core Values -->
+    <!-- 4. Sacred Pillars / Core Values (From Pillar Model) -->
     <section class="about-values-section" id="aboutValues">
         <div class="about-container">
             <div class="section-center-header">
@@ -142,71 +153,49 @@
             </div>
 
             <div class="values-grid">
-                <!-- Pillar 1 -->
+                {% for pillar in pillars %}
                 <div class="value-card">
                     <div class="value-icon-box">
+                        {% if forloop.counter == 1 %}
+                        <!-- Farm / Leaf Icon -->
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
                             <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
                         </svg>
-                    </div>
-                    <div class="value-card-content">
-                        <span class="value-number">01</span>
-                        <h3 class="value-title">Hyper-Seasonal Provenance</h3>
-                        <p class="value-description">
-                            We don't buy from industrial supply lines. We partner directly with small-scale artisan farms, micro-dairies, and coastal fishermen to guarantee zero-mile integrity and absolute peak flavor.
-                        </p>
-                        <ul class="value-features">
-                            <li><span class="check-icon">✓</span> 100% British dry-aged rare breeds</li>
-                            <li><span class="check-icon">✓</span> Wild sustainable coastal seafood</li>
-                            <li><span class="check-icon">✓</span> Daily woodland foraged botanicals</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Pillar 2 -->
-                <div class="value-card">
-                    <div class="value-icon-box">
+                        {% elif forloop.counter == 2 %}
+                        <!-- Wine Glass Icon -->
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M8 22h8"></path>
                             <path d="M12 15v7"></path>
                             <path d="M5 3h14a7 7 0 0 1-7 7.5A7 7 0 0 1 5 3Z"></path>
                         </svg>
-                    </div>
-                    <div class="value-card-content">
-                        <span class="value-number">02</span>
-                        <h3 class="value-title">The Cellar & Rare Vintages</h3>
-                        <p class="value-description">
-                            Curated under the guidance of our Head Sommelier, our private cellar holds over 250 labels spanning historic Bordeaux châteaux, small biodynamic terroirs, and the finest English sparkling wines.
-                        </p>
-                        <ul class="value-features">
-                            <li><span class="check-icon">✓</span> Bespoke tasting pairing flights</li>
-                            <li><span class="check-icon">✓</span> Subterranean vaulted private cellar</li>
-                            <li><span class="check-icon">✓</span> Award-winning Sussex & Kent sparklings</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Pillar 3 -->
-                <div class="value-card">
-                    <div class="value-icon-box">
+                        {% else %}
+                        <!-- Heart / Hospitality Icon -->
                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                         </svg>
+                        {% endif %}
                     </div>
                     <div class="value-card-content">
-                        <span class="value-number">03</span>
-                        <h3 class="value-title">Poise & Warm Hospitality</h3>
-                        <p class="value-description">
-                            Fine dining without pretense. We believe in warm, attentive, and intuitive service that leaves you feeling cherished, whether you join us for a leisurely Sunday roast or an anniversary banquet.
-                        </p>
+                        <span class="value-number">{{ pillar.number }}</span>
+                        <h3 class="value-title">{{ pillar.title }}</h3>
+                        <p class="value-description">{{ pillar.description }}</p>
                         <ul class="value-features">
-                            <li><span class="check-icon">✓</span> Personalized dietary orchestration</li>
-                            <li><span class="check-icon">✓</span> Intimate Victorian booth seating</li>
-                            <li><span class="check-icon">✓</span> Dedicated private dining concierge</li>
+                            {% if pillar.feature_1 %}
+                            <li><span class="check-icon">✓</span> {{ pillar.feature_1 }}</li>
+                            {% endif %}
+                            {% if pillar.feature_2 %}
+                            <li><span class="check-icon">✓</span> {{ pillar.feature_2 }}</li>
+                            {% endif %}
+                            {% if pillar.feature_3 %}
+                            <li><span class="check-icon">✓</span> {{ pillar.feature_3 }}</li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
+                {% empty %}
+                <p>No pillars added yet.</p>
+                {% endfor %}
             </div>
         </div>
     </section>
@@ -234,7 +223,7 @@
         </div>
     </section>
 
-    <!-- 6. Team / Artisans Section -->
+    <!-- 6. Team / Artisans Section (From TeamMember Model) -->
     <section class="about-team-section" id="aboutTeam">
         <div class="about-container">
             <div class="section-center-header">
@@ -267,12 +256,14 @@
                         <p class="team-bio">{{ member.bio }}</p>
                     </div>
                 </div>
+                {% empty %}
+                <p>No team members added yet.</p>
                 {% endfor %}
             </div>
         </div>
     </section>
 
-    <!-- 7. Milestones & Timeline Section -->
+    <!-- 7. Milestones & Timeline Section (From Milestone Model) -->
     <section class="about-timeline-section" id="aboutTimeline">
         <div class="about-container">
             <div class="section-center-header">
@@ -301,6 +292,8 @@
                         <p class="timeline-desc">{{ milestone.description }}</p>
                     </div>
                 </div>
+                {% empty %}
+                <p>No milestones added yet.</p>
                 {% endfor %}
             </div>
         </div>
