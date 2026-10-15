@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'contact/css/contact.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="contact-page-wrapper">
+    <!-- 1. Contact Hero Banner -->
+    <section class="contact-hero-section" id="contactHero">
+        <div class="contact-hero-bg" style="background-image: url('{% if info.get_hero_image %}{{ info.get_hero_image }}{% else %}{% static 'contact/media/contact_hero.jpg' %}{% endif %}');">
+            <div class="contact-hero-overlay"></div>
+        </div>
+        <div class="contact-hero-content">
+            <nav class="contact-breadcrumb" aria-label="Breadcrumb">
+                <a href="/">HOME</a>
+                <span class="crumb-separator">/</span>
+                <span class="crumb-current">CONTACT & LOCATION</span>
+            </nav>
+            <div class="contact-hero-kicker">
+                <span class="gold-diamond">✦</span>
+                <span class="kicker-text">CONNECT WITH OUR CONCIERGE</span>
+                <span class="gold-diamond">✦</span>
+            </div>
+            <h1 class="contact-hero-title">
+                Join Us on King Street, <br>
+                <span class="highlight-script">Manchester</span>
+            </h1>
+            <p class="contact-hero-subtitle">
+                {{ info.tagline|default:"We welcome you to our Victorian dining hall on historic King Street for exceptional seasonal dining, rare cellar vintages, and warm British hospitality." }}
+            </p>
+            <div class="hero-actions-wrap">
+                <a href="#contactFormSection" class="btn-solid-gold">
+                    <span>SEND AN INQUIRY</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+                <button type="button" class="btn-outline-gold open-booking-modal">
+                    RESERVE A TABLE
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Contact Summary Info Cards -->
+    <section class="contact-summary-section" id="contactSummary">
+        <div class="contact-container">
+            <div class="summary-cards-grid">
+                <!-- Card 1: Address -->
+                <div class="summary-card">
+                    <div class="summary-icon-box">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                    </div>
+                    <span class="summary-card-tag">LOCATION</span>
+                    <h3 class="summary-card-title">{{ info.address|default:"56 King Street" }}</h3>
+                    <p class="summary-card-desc">{{ info.city|default:"Manchester" }}, {{ info.postcode|default:"M2 4WU" }}<br>{{ info.country|default:"United Kingdom" }}</p>
+                    <a href="#contactMap" class="summary-card-link">VIEW ON MAP ↓</a>
+                </div>
+
+                <!-- Card 2: Telephone -->
+                <div class="summary-card">
+                    <div class="summary-icon-box">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                    </div>
+                    <span class="summary-card-tag">TELEPHONE</span>
+                    <h3 class="summary-card-title">
+                        <a href="tel:{{ info.phone|default:'01618390640' }}" class="phone-link">{{ info.phone|default:"0161 839 0640" }}</a>
+                    </h3>
+                    <p class="summary-card-desc">Concierge Line & Bookings<br>{{ info.phone_secondary|default:"+44 (0) 161 839 0641" }}</p>
+                    <span class="summary-card-sub">Lines open 10am – 10pm</span>
+                </div>
+
+                <!-- Card 3: Email Concierge -->
+                <div class="summary-card">
+                    <div class="summary-icon-box">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                        </svg>
+                    </div>
+                    <span class="summary-card-tag">ELECTRONIC POST</span>
+                    <h3 class="summary-card-title email-title">
+                        <a href="mailto:{{ info.email|default:'reservations@chesterfield-restaurant.co.uk' }}" class="email-link">
+                            {{ info.email|default:"reservations@chesterfield-restaurant.co.uk" }}
+                        </a>
+                    </h3>
+                    <p class="summary-card-desc">Private dining inquiries:<br>{{ info.email_events|default:"events@chesterfield-restaurant.co.uk" }}</p>
+                    <span class="summary-card-sub">Guaranteed response within 24h</span>
+                </div>
+
+                <!-- Card 4: Operating Hours -->
+                <div class="summary-card">
+                    <div class="summary-icon-box">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <span class="summary-card-tag">DINING HOURS</span>
+                    <h3 class="summary-card-title">Daily Service</h3>
+                    <div class="summary-hours-list">
+                        <span><strong>Mon – Thu:</strong> {{ info.opening_mon_thu|default:"12pm – 10pm" }}</span>
+                        <span><strong>Fri – Sat:</strong> {{ info.opening_fri_sat|default:"12pm – 11:30pm" }}</span>
+                        <span><strong>Sun:</strong> {{ info.opening_sun|default:"12pm – 9:30pm" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Main Split Section: Inquiry Form & Directory -->
+    <section class="contact-main-section" id="contactFormSection">
+        <div class="contact-container">
+            <div class="contact-split-grid">
+                
+                <!-- Left Column: Premium Guest Contact Form -->
+                <div class="form-container-card">
+                    <div class="form-header">
+                        <div class="section-tag">
+                            <span class="tag-line"></span>
+                            <span class="tag-title">DIRECT INQUIRY</span>
+                        </div>
+                        <h2 class="form-heading">Send a Message to Our Concierge</h2>
+                        <p class="form-lead">
+                            Whether you are planning an intimate celebration, seeking bespoke sommelier pairings, or exploring private salon banquets, please share your details and our team will attend to you promptly.
+                        </p>
+                    </div>
+
+                    <!-- Messages / Alerts -->
+                    {% if messages %}
+                    <div class="django-messages-wrap">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <span class="alert-icon">✓</span>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div id="ajaxAlertBox" class="ajax-alert" style="display: none;"></div>
+
+                    <!-- Contact Form -->
+                    <form action="{% url 'contact:contact_view' %}" method="POST" class="contact-form" id="contactForm" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="ajax" value="true">
+
+                        <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label for="fullName">Your Full Name <span class="req">*</span></label>
+                                <input type="text" id="fullName" name="full_name" class="form-control" placeholder="Lord / Lady / Mr / Ms First & Last Name" required>
+                                <span class="field-error" id="nameError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="emailAddress">Email Address <span class="req">*</span></label>
+                                <input type="email" id="emailAddress" name="email" class="form-control" placeholder="e.g. yourname@domain.com" required>
+                                <span class="field-error" id="emailError"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label for="phoneNumber">Telephone (Optional)</label>
+                                <input type="tel" id="phoneNumber" name="phone" class="form-control" placeholder="e.g. +44 7123 456789">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inquiryType">Reason for Inquiry</label>
+                                <div class="select-wrapper">
+                                    <select id="inquiryType" name="inquiry_type" class="form-control form-select">
+                                        <option value="general">General Inquiries</option>
+                                        <option value="reservation">Table Reservation Assistance</option>
+                                        <option value="private_dining">Private Dining & Event Salon</option>
+                                        <option value="press">Press, Media & Partnerships</option>
+                                        <option value="careers">Careers & Brigade Recruitment</option>
+                                        <option value="feedback">Guest Experience Feedback</option>
+                                    </select>
+                                    <span class="select-chevron">▼</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inquirySubject">Subject Line</label>
+                            <input type="text" id="inquirySubject" name="subject" class="form-control" placeholder="e.g. Private dinner for 12 guests on 24th November">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inquiryMessage">Your Message <span class="req">*</span></label>
+                            <textarea id="inquiryMessage" name="message" class="form-control form-textarea" rows="5" placeholder="Please elaborate on your request, desired date, dietary needs, or event specifics..." required></textarea>
+                            <span class="field-error" id="messageError"></span>
+                        </div>
+
+                        <div class="form-action-group">
+                            <button type="submit" class="btn-solid-gold submit-btn" id="contactSubmitBtn">
+                                <span class="btn-text">TRANSMIT INQUIRY</span>
+                                <span class="btn-spinner" style="display: none;"></span>
+                                <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </button>
+                            <span class="privacy-note">
+                                🔒 Your information is confidential and never shared with third parties.
+                            </span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Departments & Etiquette -->
+                <div class="directory-column">
+                    <!-- Department Contacts Box -->
+                    <div class="directory-card">
+                        <div class="directory-header">
+                            <span class="card-kicker">DIRECT LIAISONS</span>
+                            <h3 class="card-heading">Specialized Departments</h3>
+                            <div class="gold-line-subtle"></div>
+                        </div>
+
+                        <div class="departments-list">
+                            {% for dep in departments %}
+                            <div class="department-item">
+                                <div class="dep-info">
+                                    <h4 class="dep-name">{{ dep.name }}</h4>
+                                    <p class="dep-desc">{{ dep.role_description }}</p>
+                                </div>
+                                <div class="dep-links">
+                                    <a href="mailto:{{ dep.email }}" class="dep-link email" title="Send email to {{ dep.name }}">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                        <span>{{ dep.email }}</span>
+                                    </a>
+                                    <a href="tel:{{ dep.phone }}" class="dep-link phone" title="Call {{ dep.name }}">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                        <span>{{ dep.phone }}</span>
+                                    </a>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted">No departments listed.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Dining Etiquette & Arrival Information -->
+                    <div class="etiquette-card">
+                        <div class="directory-header">
+                            <span class="card-kicker">GUEST PROTOCOL</span>
+                            <h3 class="card-heading">Arrival & Dining Etiquette</h3>
+                            <div class="gold-line-subtle"></div>
+                        </div>
+
+                        <div class="etiquette-points">
+                            <div class="etiquette-point">
+                                <span class="point-icon">✦</span>
+                                <div>
+                                    <strong>Dress Code</strong>
+                                    <p>{{ info.dress_code|default:"Smart Casual • Elegant dining attire encouraged • No athletic wear after 6 PM" }}</p>
+                                </div>
+                            </div>
+
+                            <div class="etiquette-point">
+                                <span class="point-icon">✦</span>
+                                <div>
+                                    <strong>Valet & Parking</strong>
+                                    <p>{{ info.parking_info|default:"Valet service available from 5:30 PM on King Street. Q-Park Deansgate is 3 minutes walk." }}</p>
+                                </div>
+                            </div>
+
+                            <div class="etiquette-point">
+                                <span class="point-icon">✦</span>
+                                <div>
+                                    <strong>Table Reservations</strong>
+                                    <p>Tables are held for 15 minutes past reservation time. Please notify us of any schedule changes.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="etiquette-action">
+                            <button type="button" class="btn-solid-gold w-100 open-booking-modal">
+                                <span>RESERVE YOUR TABLE NOW</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Interactive Location & Google Map Section -->
+    <section class="contact-map-section" id="contactMap">
+        <div class="contact-container">
+            <div class="section-center-header">
+                <span class="section-kicker">KING STREET, MANCHESTER</span>
+                <h2 class="section-heading">How to Find The Chesterfield</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Located in Manchester’s iconic Victorian financial district, amidst luxury boutiques, grand banking architecture, and historic cobblestone thoroughfares.
+                </p>
+            </div>
+
+            <div class="map-showcase-box">
+                <div class="map-iframe-wrapper">
+                    <iframe 
+                        src="{{ info.map_embed_url|default:'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2374.3168676251547!2d-2.2476561233061694!3d53.48128507232863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bb1c20141bb0b%3A0xe54d6fa4d033a0b1!2sKing%20St%2C%20Manchester%2C%20UK!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s' }}" 
+                        width="100%" 
+                        height="480" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="The Chesterfield Location Map">
+                    </iframe>
+                </div>
+
+                <!-- Overlaid Transit Information -->
+                <div class="transit-info-bar">
+                    <div class="transit-col">
+                        <span class="transit-icon">🚆</span>
+                        <div class="transit-text">
+                            <strong>By Rail</strong>
+                            <span>Manchester Victoria (8 min walk) • Piccadilly (12 min walk or 5 min taxi)</span>
+                        </div>
+                    </div>
+                    <div class="transit-divider"></div>
+                    <div class="transit-col">
+                        <span class="transit-icon">🚊</span>
+                        <div class="transit-text">
+                            <strong>Metrolink Tram</strong>
+                            <span>St Peter's Square & Exchange Square stations (under 4 minutes walk)</span>
+                        </div>
+                    </div>
+                    <div class="transit-divider"></div>
+                    <div class="transit-col">
+                        <span class="transit-icon">🚗</span>
+                        <div class="transit-text">
+                            <strong>Parking & Valet</strong>
+                            <span>Valet portico at King Street • Q-Park Deansgate (Postcode: M3 2EQ)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Frequently Asked Questions (FAQ) Section -->
+    <section class="contact-faq-section" id="contactFAQ">
+        <div class="contact-container">
+            <div class="section-center-header">
+                <span class="section-kicker">CLARIFICATIONS & QUERIES</span>
+                <h2 class="section-heading">Frequently Asked Questions</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Answers to common inquiries regarding reservations, dietary adaptations, cellar corkage, and group dining.
+                </p>
+            </div>
+
+            <div class="faq-accordion" id="faqAccordion">
+                {% for faq in faqs %}
+                <div class="faq-item {% if forloop.first %}faq-open{% endif %}" id="faqItem{{ faq.id }}">
+                    <button class="faq-question-btn" type="button" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
+                        <span class="faq-num">0{{ forloop.counter }}</span>
+                        <span class="faq-q-text">{{ faq.question }}</span>
+                        <span class="faq-toggle-icon">
+                            <span class="toggle-bar horizontal"></span>
+                            <span class="toggle-bar vertical"></span>
+                        </span>
+                    </button>
+                    <div class="faq-answer-panel" {% if forloop.first %}style="max-height: 300px;"{% endif %}>
+                        <div class="faq-answer-content">
+                            <p>{{ faq.answer }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No FAQ items found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Bottom Call-To-Action Banner -->
+    <section class="contact-bottom-cta" id="contactBottomCta">
+        <div class="contact-container">
+            <div class="contact-cta-card">
+                <div class="cta-card-flourish"></div>
+                <div class="cta-inner-content">
+                    <span class="cta-supertitle">IMMERSE YOUR SENSES</span>
+                    <h2 class="cta-title">We Look Forward to Welcoming You</h2>
+                    <p class="cta-desc">
+                        Whether enjoying our celebrated Sunday Roast, indulging in our evening Chef's Tasting Menu, or enjoying a pre-theatre cocktail in the salon, an exquisite memory awaits you.
+                    </p>
+                    <div class="cta-btn-group">
+                        <button type="button" class="btn-solid-gold open-booking-modal" id="contactBottomBookBtn">
+                            <span>RESERVE A TABLE</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+                        <a href="{% url 'menu_list' %}" class="btn-outline-gold" id="contactBottomMenuBtn">
+                            EXPLORE THE MENU
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'contact/js/contact.js' %}"></script>
+{% endblock extra_js %}

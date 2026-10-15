@@ -5,14 +5,20 @@ from django.conf.urls.static import static
 from . import views
 from menu import views as menu_views
 from about import views as about_views
+from contact import views as contact_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', include('home.urls')),
     path('menu/', include('menu.urls')),
     path('menu/', menu_views.menu_list, name='menu_list'),
+    path('menu/', menu_views.menu_list, name='menu'),
     path('about/', include('about.urls')),
+    path('about/', about_views.about_view, name='about_view'),
     path('about/', about_views.about_view, name='about'),
+    path('contact/', include('contact.urls')),
+    path('contact/', contact_views.contact_view, name='contact_view'),
+    path('contact/', contact_views.contact_view, name='contact'),
     path('', views.Base, name='base'),
 ]
 
