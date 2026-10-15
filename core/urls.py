@@ -3,9 +3,12 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 from .import views
+from menu import views as menu_views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', include('home.urls')),
+    path('menu/', include('menu.urls')),
     path('', views.Base, name='base'),
 ]
 

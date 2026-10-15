@@ -1,0 +1,517 @@
+/* ==========================================================================
+   THE CHESTERFIELD - MENU DETAILS STYLESHEET
+   Luxury Dish Detail Modal & Dedicated Presentation View (Image 2)
+   ========================================================================== */
+
+/* Modal Backdrop */
+.menu-details-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 7, 6, 0.90);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 2500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.menu-details-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Modal / Card Container */
+.menu-details-card {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    background-color: #0A0D0B;
+    border: 1px solid rgba(197, 162, 101, 0.45);
+    border-radius: 16px;
+    padding: 38px 42px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(197, 162, 101, 0.15);
+    max-height: 92vh;
+    overflow-y: auto;
+    transform: scale(0.95) translateY(10px);
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
+}
+
+.menu-details-backdrop.open .menu-details-card {
+    transform: scale(1) translateY(0);
+}
+
+/* Standalone Details Page Variation */
+.standalone-card {
+    margin: 0 auto;
+    max-width: 1040px;
+    transform: none !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+/* Close 'X' Button at Top-Right */
+.details-close-x {
+    position: absolute;
+    top: 22px;
+    right: 24px;
+    background: none;
+    border: none;
+    color: #C5A265;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.details-close-x:hover {
+    color: #FFFFFF;
+    transform: rotate(90deg);
+}
+
+/* 2-Column Grid Layout */
+.details-modal-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 40px;
+    align-items: center;
+}
+
+/* ==========================================================================
+   LEFT COLUMN: GALLERY & THUMBNAILS
+   ========================================================================== */
+.modal-gallery-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-main-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #121614;
+    margin-bottom: 16px;
+    border: 1px solid rgba(197, 162, 101, 0.25);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.modal-main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease, transform 0.4s ease;
+    display: block;
+}
+
+/* Badge on Main Image */
+.modal-popular-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: #DFC088;
+    color: #111417;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 4px 14px;
+    border-radius: 20px;
+    z-index: 5;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    text-transform: capitalize;
+}
+
+/* Prev / Next Slider Arrows */
+.gallery-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(10, 13, 11, 0.75);
+    border: 1px solid rgba(197, 162, 101, 0.5);
+    color: #DFC088;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    z-index: 5;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.gallery-nav-btn.prev-btn {
+    left: 12px;
+}
+
+.gallery-nav-btn.next-btn {
+    right: 12px;
+}
+
+.gallery-nav-btn:hover {
+    background-color: #C5A265;
+    color: #0A0D0B;
+    border-color: #C5A265;
+    transform: translateY(-50%) scale(1.08);
+}
+
+/* 4 Thumbnails Row */
+.modal-thumbs-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.thumb-btn {
+    height: 68px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(197, 162, 101, 0.3);
+    background-color: #131714;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.thumb-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0.92;
+    transition: all 0.25s ease;
+}
+
+.thumb-btn:hover {
+    border-color: #DFC088;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(197, 162, 101, 0.3);
+}
+
+.thumb-btn:hover img {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.thumb-btn.active {
+    border-color: #C5A265;
+    border-width: 2px;
+    box-shadow: 0 0 14px rgba(197, 162, 101, 0.65);
+    transform: translateY(-1px);
+}
+
+.thumb-btn.active img {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   RIGHT COLUMN: DETAILS, FEATURES, QUANTITY & ACTIONS
+   ========================================================================== */
+.modal-info-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-category {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    color: #C5A265;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 2.5vw, 2.3rem);
+    font-weight: 600;
+    color: #FFFFFF;
+    line-height: 1.15;
+    margin: 0 0 10px 0;
+}
+
+.modal-price {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #C5A265;
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+}
+
+.modal-divider {
+    height: 1px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    margin-bottom: 18px;
+}
+
+.modal-desc {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.65;
+    margin: 0 0 24px 0;
+}
+
+/* 3 Luxury Bullet Points with Gold Icons */
+.modal-features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.modal-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-feature-item .m-icon {
+    color: #C5A265;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.modal-feature-item .m-feature-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+/* Quantity Selector */
+.modal-quantity-section {
+    margin-bottom: 26px;
+}
+
+.qty-label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.qty-counter-box {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(197, 162, 101, 0.4);
+    border-radius: 6px;
+    background-color: #111512;
+    overflow: hidden;
+}
+
+.qty-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.qty-btn:hover {
+    background: rgba(197, 162, 101, 0.15);
+    color: #C5A265;
+}
+
+.qty-number {
+    width: 44px;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #FFFFFF;
+    user-select: none;
+}
+
+/* Action Buttons */
+.modal-actions-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.btn-solid-gold-modal {
+    width: 100%;
+    padding: 14px;
+    background-color: #C5A265;
+    color: #0C0F0D;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(197, 162, 101, 0.3);
+}
+
+.btn-solid-gold-modal:hover {
+    background-color: #DFC088;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(197, 162, 101, 0.45);
+}
+
+.btn-outline-modal-close {
+    width: 100%;
+    padding: 13px;
+    background-color: transparent;
+    border: 1px solid rgba(197, 162, 101, 0.4);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.btn-outline-modal-close:hover {
+    border-color: #C5A265;
+    color: #C5A265;
+    background: rgba(197, 162, 101, 0.08);
+}
+
+/* ==========================================================================
+   STANDALONE DETAILS PAGE EXTRA STYLES
+   ========================================================================== */
+.details-page-section {
+    padding: 130px 0 90px 0;
+    background-color: #070908;
+    min-height: 100vh;
+}
+
+.details-page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+.details-breadcrumb {
+    max-width: 1040px;
+    margin: 0 auto 24px auto;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #C5A265;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.back-link .back-arrow {
+    transition: transform 0.2s ease;
+}
+
+.back-link:hover {
+    color: #DFC088;
+}
+
+.back-link:hover .back-arrow {
+    transform: translateX(-4px);
+}
+
+.related-dishes-section {
+    max-width: 1040px;
+    margin: 60px auto 0 auto;
+}
+
+.related-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: #FFFFFF;
+    margin-bottom: 28px;
+}
+
+.related-title .gold-text {
+    color: #C5A265;
+}
+
+.related-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 900px) {
+    .menu-details-card {
+        padding: 30px 24px;
+    }
+    .details-modal-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+    .modal-main-img-wrap {
+        height: 280px;
+    }
+    .related-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .menu-details-card {
+        padding: 24px 16px;
+    }
+    .modal-main-img-wrap {
+        height: 220px;
+    }
+    .thumb-btn {
+        height: 52px;
+    }
+    .modal-title {
+        font-size: 1.6rem;
+    }
+    .related-grid {
+        grid-template-columns: 1fr;
+    }
+}
