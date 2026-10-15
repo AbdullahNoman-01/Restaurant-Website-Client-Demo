@@ -1,0 +1,450 @@
+/* ==========================================================================
+   THE CHESTERFIELD - FOOTER STYLESHEET
+   Luxury British Kitchen & Bar Footer
+   ========================================================================== */
+
+/* Outer Footer Container */
+.site-footer {
+    width: 100%;
+    background-color: #080A0B;
+    color: #FFFFFF;
+    border-top: 1px solid rgba(197, 162, 101, 0.45);
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    position: relative;
+    box-sizing: border-box;
+    margin-top: 500px;
+}
+
+.site-footer *, 
+.site-footer *::before, 
+.site-footer *::after {
+    box-sizing: border-box;
+}
+
+/* Main Top Footer Grid / Container */
+.footer-top-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 64px 40px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 36px;
+}
+
+/* Individual Footer Columns */
+.footer-col {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Column 1: Brand & Identity */
+.footer-col-brand {
+    flex: 1.25;
+    align-items: flex-start;
+}
+
+.footer-brand-logo {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.25s ease;
+}
+
+.footer-brand-logo:hover {
+    transform: scale(1.02);
+}
+
+.f-logo-sub-top {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    color: #DFC088;
+    margin-bottom: 2px;
+}
+
+.f-logo-main {
+    font-family: 'Cinzel', serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: #FFFFFF;
+    line-height: 1.1;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.f-logo-sub-bottom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    width: 100%;
+    justify-content: center;
+}
+
+.f-logo-line {
+    height: 1px;
+    width: 24px;
+    background: rgba(197, 162, 101, 0.6);
+    display: inline-block;
+}
+
+.f-logo-tag {
+    font-size: 0.54rem;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+}
+
+.footer-taglines {
+    margin-top: 26px;
+    margin-bottom: 26px;
+}
+
+.footer-taglines p {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.82);
+    line-height: 1.6;
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+
+.footer-social-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: auto;
+}
+
+.footer-social-icon {
+    color: #C5A265;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    text-decoration: none;
+}
+
+.footer-social-icon:hover {
+    color: #FFFFFF;
+    transform: translateY(-2px);
+}
+
+/* Vertical Dividers Between Columns */
+.footer-vertical-divider {
+    width: 1px;
+    background: rgba(197, 162, 101, 0.35);
+    flex-shrink: 0;
+    align-self: stretch;
+}
+
+/* Column Headings (Cinzel Uppercase) */
+.footer-col-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.90rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: #C5A265;
+    margin: 0 0 28px 0;
+    text-transform: uppercase;
+}
+
+/* Column 2: Explore Navigation */
+.footer-col-explore {
+    flex: 0.9;
+}
+
+.footer-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.footer-nav-link {
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.78);
+    text-decoration: none;
+    transition: all 0.25s ease;
+    display: inline-block;
+}
+
+.footer-nav-link:hover {
+    color: #C5A265;
+    transform: translateX(4px);
+}
+
+/* Column 3: Visit Us */
+.footer-col-visit {
+    flex: 1.15;
+}
+
+.footer-contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.footer-contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.contact-icon {
+    color: #C5A265;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.contact-text,
+.contact-multiline {
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.82);
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+}
+
+.contact-multiline {
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-link {
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: color 0.25s ease;
+}
+
+.contact-link:hover {
+    color: #C5A265;
+}
+
+/* Column 4: News & Offers Newsletter */
+.footer-col-newsletter {
+    flex: 1.25;
+}
+
+.newsletter-desc {
+    font-size: 0.90rem;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.55;
+    margin: 0 0 22px 0;
+    letter-spacing: 0.01em;
+}
+
+.footer-newsletter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+.newsletter-input-wrap {
+    width: 100%;
+}
+
+.newsletter-input {
+    width: 100%;
+    background-color: #0E1114;
+    border: 1px solid rgba(197, 162, 101, 0.45);
+    border-radius: 2px;
+    color: #FFFFFF;
+    padding: 13px 16px;
+    font-size: 0.88rem;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.25s ease;
+}
+
+.newsletter-input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.newsletter-input:focus {
+    border-color: #C5A265;
+    background-color: #13171B;
+    box-shadow: 0 0 10px rgba(197, 162, 101, 0.25);
+}
+
+.newsletter-submit-btn {
+    background-color: #C5A265;
+    color: #111315;
+    border: none;
+    border-radius: 2px;
+    padding: 13px 22px;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(197, 162, 101, 0.25);
+}
+
+.newsletter-submit-btn:hover {
+    background-color: #DFC088;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(197, 162, 101, 0.4);
+}
+
+.newsletter-submit-btn .subscribe-arrow {
+    transition: transform 0.25s ease;
+}
+
+.newsletter-submit-btn:hover .subscribe-arrow {
+    transform: translateX(4px);
+}
+
+.newsletter-feedback-msg {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #DFC088;
+    font-size: 0.85rem;
+    animation: footerFadeIn 0.3s ease;
+}
+
+.newsletter-feedback-msg .feedback-icon {
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   BOTTOM COPYRIGHT & LEGAL STRIP
+   ========================================================================== */
+.footer-bottom-strip {
+    border-top: 1px solid rgba(197, 162, 101, 0.35);
+    background-color: #060809;
+}
+
+.footer-bottom-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 22px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.footer-copyright {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.footer-legal-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.legal-divider {
+    color: rgba(197, 162, 101, 0.5);
+    font-size: 0.85rem;
+}
+
+.legal-link {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.legal-link:hover {
+    color: #C5A265;
+}
+
+@keyframes footerFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .footer-top-container {
+        padding: 50px 30px;
+        flex-wrap: wrap;
+        gap: 40px 24px;
+    }
+
+    .footer-col-brand,
+    .footer-col-visit {
+        flex: 1 1 45%;
+    }
+
+    .footer-col-explore,
+    .footer-col-newsletter {
+        flex: 1 1 45%;
+    }
+
+    .footer-vertical-divider {
+        display: none;
+    }
+
+    .footer-col {
+        border-bottom: 1px solid rgba(197, 162, 101, 0.2);
+        padding-bottom: 24px;
+    }
+
+    .footer-col:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .footer-top-container {
+        padding: 40px 20px;
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .footer-col-brand,
+    .footer-col-explore,
+    .footer-col-visit,
+    .footer-col-newsletter {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+
+    .footer-bottom-container {
+        padding: 20px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .footer-legal-links {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
