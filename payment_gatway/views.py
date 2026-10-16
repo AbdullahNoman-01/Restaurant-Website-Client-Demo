@@ -401,7 +401,6 @@ def _create_stripe_session_for_order(request, order):
         })
 
     session = stripe.checkout.Session.create(
-        payment_method_types=['card'],
         line_items=line_items,
         mode='payment',
         customer_email=order.customer_email,
