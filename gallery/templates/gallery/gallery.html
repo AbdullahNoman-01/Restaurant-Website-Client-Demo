@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'gallery/css/gallery.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="gallery-page-wrapper">
+    <!-- 1. Hero Banner Section -->
+    <section class="gallery-hero-section" id="galleryHero">
+        <div class="gallery-hero-bg" style="background-image: url('{% static 'gallery/media/gallery_hero.jpg' %}');">
+            <div class="gallery-hero-overlay"></div>
+        </div>
+        <div class="gallery-hero-content">
+            <nav class="gallery-breadcrumb" aria-label="Breadcrumb">
+                <a href="/">HOME</a>
+                <span class="crumb-separator">/</span>
+                <span class="crumb-current">VISUAL ARCHIVES & GALLERY</span>
+            </nav>
+            <div class="gallery-hero-kicker">
+                <span class="gold-diamond">✦</span>
+                <span class="kicker-text">THE VISUAL CHRONICLE OF THE CHESTERFIELD</span>
+                <span class="gold-diamond">✦</span>
+            </div>
+            <h1 class="gallery-hero-title">
+                A Symphony of Flavor, <br>
+                <span class="highlight-script">Heritage & Light</span>
+            </h1>
+            <p class="gallery-hero-subtitle">
+                Immerse yourself in the culinary artistry, Victorian architectural grandeur, subterranean wine vaults, and midnight cocktail ambiance of Manchester's premier gastronomic address.
+            </p>
+            <div class="hero-actions-wrap">
+                <a href="#galleryGridSection" class="btn-solid-gold">
+                    <span>EXPLORE THE ARCHIVES</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                    </svg>
+                </a>
+                <a href="{% url 'reservations' %}" class="btn-outline-gold">
+                    BOOK YOUR TABLE
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Heritage Stats Counter Bar -->
+    <section class="gallery-stats-section">
+        <div class="gallery-container">
+            <div class="stats-counter-grid">
+                {% for stat in stats %}
+                <div class="stat-counter-item">
+                    <span class="stat-number">{{ stat.stat_number }}</span>
+                    <span class="stat-label">{{ stat.label }}</span>
+                </div>
+                {% empty %}
+                <div class="stat-counter-item">
+                    <span class="stat-number">1884</span>
+                    <span class="stat-label">Victorian Bank Heritage</span>
+                </div>
+                <div class="stat-counter-item">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Bespoke Private Dining Salons</span>
+                </div>
+                <div class="stat-counter-item">
+                    <span class="stat-number">3,500+</span>
+                    <span class="stat-label">Grand Cru Cellar Bottles</span>
+                </div>
+                <div class="stat-counter-item">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Artisanal British Sourcing</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Curated Gallery Grid Section with Filter Pills -->
+    <section class="gallery-grid-section" id="galleryGridSection">
+        <div class="gallery-container">
+            <!-- Section Header -->
+            <div class="section-center-header">
+                <span class="section-kicker">CURATED EXHIBITIONS</span>
+                <h2 class="section-heading">The Photographic Portfolio</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Select a curated collection to discover our seasonal dishes, architectural preservation, cocktail craft, open hearth culinary theater, and private banquets.
+                </p>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="gallery-filter-bar">
+                <button type="button" class="filter-pill-btn active" data-filter="all">
+                    <span>ALL ARCHIVES</span>
+                    <span class="pill-count">{{ items|length }}</span>
+                </button>
+                {% for category in categories %}
+                    {% if category.slug != 'all' %}
+                    <button type="button" class="filter-pill-btn" data-filter="{{ category.slug }}">
+                        <span>{{ category.name|upper }}</span>
+                        <span class="pill-count">{{ category.items.count }}</span>
+                    </button>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Active Filter Status Indicator -->
+            <div class="filter-status-row">
+                <span class="filter-status-text" id="galleryFilterStatus">Showing all <strong>{{ items|length }}</strong> photographs</span>
+            </div>
+
+            <!-- Gallery Masonry/Dynamic Grid -->
+            <div class="gallery-masonry-grid" id="galleryMasonryGrid">
+                {% for item in items %}
+                <div class="gallery-card card-aspect-{{ item.aspect_ratio }}{% if item.featured %} card-featured{% endif %}" 
+                     data-category="{{ item.category.slug }}"
+                     data-index="{{ forloop.counter0 }}"
+                     data-id="{{ item.id }}"
+                     data-title="{{ item.title }}"
+                     data-subtitle="{{ item.subtitle }}"
+                     data-desc="{{ item.description }}"
+                     data-img="{{ item.get_image_url }}"
+                     data-badge="{{ item.badge }}"
+                     data-credit="{{ item.photographer_credit }}">
+                    
+                    <div class="card-inner">
+                        <img src="{{ item.get_image_url }}" alt="{{ item.title }}" loading="lazy" class="gallery-card-img">
+                        
+                        <div class="card-gradient-overlay"></div>
+
+                        {% if item.badge %}
+                        <div class="card-badge-tag">{{ item.badge }}</div>
+                        {% endif %}
+
+                        <div class="card-zoom-indicator">
+                            <span class="zoom-icon">✦</span>
+                        </div>
+
+                        <div class="card-caption-content">
+                            <span class="caption-category">{{ item.category.name }}</span>
+                            <h3 class="caption-title">{{ item.title }}</h3>
+                            {% if item.subtitle %}
+                            <p class="caption-subtitle">{{ item.subtitle }}</p>
+                            {% endif %}
+                            <span class="caption-view-prompt">
+                                <span>VIEW ARCHIVE</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                                    <polyline points="7 7 17 7 17 17"></polyline>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="gallery-empty-state">
+                    <p>No gallery photographs currently published.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Interactive Lightbox Modal -->
+    <div class="gallery-lightbox-modal" id="galleryLightboxModal" style="display: none;" role="dialog" aria-modal="true" aria-label="Image Lightbox">
+        <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+        
+        <div class="lightbox-container">
+            <!-- Close Button -->
+            <button type="button" class="lightbox-close-btn" id="lightboxCloseBtn" aria-label="Close dialog">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- Nav Arrows -->
+            <button type="button" class="lightbox-nav-btn prev-btn" id="lightboxPrevBtn" aria-label="Previous photograph">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+
+            <button type="button" class="lightbox-nav-btn next-btn" id="lightboxNextBtn" aria-label="Next photograph">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+
+            <!-- Lightbox Main Body -->
+            <div class="lightbox-body">
+                <!-- Left: Image Display -->
+                <div class="lightbox-media-wrap">
+                    <img src="" alt="" id="lightboxMainImg" class="lightbox-main-img">
+                </div>
+
+                <!-- Right: Curated Dossier Panel -->
+                <div class="lightbox-dossier-panel">
+                    <div class="dossier-badge-row">
+                        <span class="dossier-badge" id="lightboxBadge">SIGNATURE DISH</span>
+                        <span class="dossier-counter" id="lightboxCounter">1 / 15</span>
+                    </div>
+
+                    <h2 class="dossier-title" id="lightboxTitle">Photograph Title</h2>
+                    <p class="dossier-subtitle" id="lightboxSubtitle">Subtitle or course description</p>
+
+                    <div class="gold-line-dossier"></div>
+
+                    <p class="dossier-desc" id="lightboxDesc">
+                        Detailed commentary and culinary narrative will be displayed here.
+                    </p>
+
+                    <div class="dossier-meta-block">
+                        <span class="meta-label">ARCHIVE CREDIT:</span>
+                        <span class="meta-value" id="lightboxCredit">The Chesterfield Archives</span>
+                    </div>
+
+                    <div class="dossier-actions-row">
+                        <a href="{% url 'reservations' %}" class="btn-solid-gold w-100 text-center">
+                            <span>RESERVE FOR THIS EXPERIENCE</span>
+                        </a>
+                        <a href="{% url 'menu_list' %}" class="btn-outline-gold w-100 text-center">
+                            <span>VIEW COMPLETE MENU</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Instagram Live Chronicle Grid Section -->
+    <section class="gallery-social-section" id="gallerySocialSection">
+        <div class="gallery-container">
+            <div class="section-center-header">
+                <span class="section-kicker">INSTAGRAM DISPATCHES</span>
+                <h2 class="section-heading">#TheChesterfieldMCR</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Follow our kitchen brigade, cellarmaster excursions, and nightly dining room theater on Instagram <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="gold-link">@thechesterfield.mcr</a>.
+                </p>
+            </div>
+
+            <div class="social-cards-grid">
+                {% for post in instagram_posts %}
+                <a href="{{ post.link }}" target="_blank" rel="noopener noreferrer" class="social-post-card">
+                    <img src="{{ post.get_image_url }}" alt="{{ post.title }}" loading="lazy">
+                    <div class="social-card-overlay">
+                        <svg class="insta-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                        </svg>
+                        <span class="social-likes">❤️ {{ post.likes_count }}</span>
+                        <span class="social-title">{{ post.title }}</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="text-center text-muted">Join us on social media for daily dispatches.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Bottom VIP Call to Action Banner -->
+    <section class="gallery-cta-banner">
+        <div class="gallery-container">
+            <div class="cta-banner-content">
+                <span class="banner-kicker">DISCOVER OUR HOSPITALITY IN PERSON</span>
+                <h2 class="banner-title">Join Us in the Heart of Manchester</h2>
+                <p class="banner-subtitle">
+                    Whether reserving an intimate dinner in the Grand Hall or hiring our subterranean Bullion Vault, your memorable evening begins with a table reservation.
+                </p>
+                <div class="banner-actions-group">
+                    <a href="{% url 'reservations' %}" class="btn-solid-gold">RESERVE A TABLE</a>
+                    <a href="{% url 'private_dining' %}" class="btn-outline-gold">EXPLORE PRIVATE SALONS</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'gallery/js/gallery.js' %}"></script>
+{% endblock extra_js %}

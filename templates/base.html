@@ -44,13 +44,13 @@
             <!-- Navigation Links -->
             <nav class="main-navigation" id="mainNav">
                 <ul class="nav-links">
-                    <li><a href="#home" class="nav-link active" id="navHome">HOME</a></li>
-                    <li><a href="{% url 'about' %}" class="nav-link" id="navAbout">ABOUT</a></li>
-                    <li><a href="{% url 'menu_list' %}" class="nav-link" id="navMenu">MENU</a></li>
-                    <li><a href="{% url 'reservations' %}" class="nav-link" id="navReservations">RESERVATIONS</a></li>
-                    <li><a href="{% url 'private_dining' %}" class="nav-link" id="navPrivateDining">PRIVATE DINING</a></li>
-                    <li><a href="#gallery" class="nav-link" id="navGallery">GALLERY</a></li>
-                    <li><a href="{% url 'contact_view' %}" class="nav-link" id="navContact">CONTACT</a></li>
+                    <li><a href="/" class="nav-link {% if request.path == '/' or not request.resolver_match.url_name or request.resolver_match.url_name == 'base' or request.resolver_match.url_name == 'home' %}active{% endif %}" id="navHome">HOME</a></li>
+                    <li><a href="{% url 'about' %}" class="nav-link {% if 'about' in request.path or request.resolver_match.url_name == 'about' or request.resolver_match.url_name == 'about_view' %}active{% endif %}" id="navAbout">ABOUT</a></li>
+                    <li><a href="{% url 'menu_list' %}" class="nav-link {% if 'menu' in request.path or request.resolver_match.url_name == 'menu' or request.resolver_match.url_name == 'menu_list' or request.resolver_match.url_name == 'menu_detail' %}active{% endif %}" id="navMenu">MENU</a></li>
+                    <li><a href="{% url 'reservations' %}" class="nav-link {% if 'reservation' in request.path or request.resolver_match.url_name == 'reservations' or request.resolver_match.url_name == 'reservations_view' %}active{% endif %}" id="navReservations">RESERVATIONS</a></li>
+                    <li><a href="{% url 'private_dining' %}" class="nav-link {% if 'private_dining' in request.path or request.resolver_match.url_name == 'private_dining' or request.resolver_match.url_name == 'private_dining_view' %}active{% endif %}" id="navPrivateDining">PRIVATE DINING</a></li>
+                    <li><a href="{% url 'gallery' %}" class="nav-link {% if 'gallery' in request.path or request.resolver_match.url_name == 'gallery' or request.resolver_match.url_name == 'gallery_view' %}active{% endif %}" id="navGallery">GALLERY</a></li>
+                    <li><a href="{% url 'contact_view' %}" class="nav-link {% if 'contact' in request.path or request.resolver_match.url_name == 'contact' or request.resolver_match.url_name == 'contact_view' %}active{% endif %}" id="navContact">CONTACT</a></li>
                 </ul>
             </nav>
 
