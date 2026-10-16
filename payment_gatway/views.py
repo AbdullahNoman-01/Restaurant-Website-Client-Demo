@@ -110,6 +110,38 @@ def _parse_request_data(request):
     return request.POST
 
 
+def _is_ajax(request):
+    """
+    Detects if the request is an AJAX or API call expecting JSON.
+    Checks headers case-insensitively and also checks request Accept / Content-Type.
+    """
+    x_req = request.headers.get('x-requested-with', '') or request.META.get('HTTP_X_REQUESTED_WITH', '')
+    accept = request.headers.get('accept', '') or request.META.get('HTTP_ACCEPT', '')
+    content_type = getattr(request, 'content_type', '') or request.headers.get('content-type', '')
+    
+    return (
+        str(x_req).lower() == 'xmlhttprequest' or
+        'application/json' in str(accept).lower() or
+        'application/json' in str(content_type).lower()
+    )
+
+
+def _get_base_url(request):
+    """
+    Resolves the base URL dynamically prioritizing the incoming request host and scheme,
+    so that Stripe return URLs (success and cancel) work smoothly on both local development
+    and Render production without requiring manual SITE_URL synchronization.
+    """
+    if request:
+        try:
+            base = request.build_absolute_uri('/').rstrip('/')
+            if base.startswith('http://') or base.startswith('https://'):
+                return base
+        except Exception:
+            pass
+    return getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000').rstrip('/')
+
+
 # ==============================================================================
 # FEATURE 1 & 2: CART VIEWS & AJAX APIS
 # ==============================================================================
@@ -308,6 +340,86 @@ def checkout_view(request):
     return render(request, 'payment_gatway/checkout.html', context)
 
 
+def _create_stripe_session_for_order(request, order):
+    """
+    Dynamically creates a Stripe Checkout Session using database MenuItem snapshots.
+    Uses Stripe's inline price_data with product_data and unit_amount.
+    Ensures Decimal-safe integer amounts in smallest currency units (cents).
+    Never relies on client-provided amounts.
+    """
+    if not stripe:
+        raise ValueError("Stripe Python SDK is not installed or available.")
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    if not stripe.api_key or stripe.api_key == 'sk_test_placeholder':
+        raise ValueError("Stripe Secret Key is not configured. Please check environment variables.")
+
+    base_url = _get_base_url(request)
+    success_url = f"{base_url}{reverse('payment_gatway:stripe_success')}?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{base_url}{reverse('payment_gatway:stripe_cancel', kwargs={'access_token': order.access_token})}"
+
+    line_items = []
+    for item in order.items.all():
+        # Validate that the menu item is still active and available in database
+        if item.menu_item and not item.menu_item.is_available:
+            raise ValueError(f"Dish '{item.item_name}' is currently out of stock or unavailable.")
+
+        # Decimal-safe calculation for unit amount in smallest currency unit (e.g. cents)
+        unit_amount = int((item.unit_price * Decimal('100')).quantize(Decimal('1')))
+        if unit_amount <= 0:
+            raise ValueError(f"Invalid price calculated for dish '{item.item_name}'.")
+
+        product_data = {
+            'name': item.item_name,
+            'description': f"The Chesterfield Gourmet Selection: {item.item_name}",
+        }
+        if item.item_image_url and (item.item_image_url.startswith('http://') or item.item_image_url.startswith('https://')):
+            product_data['images'] = [item.item_image_url]
+
+        line_items.append({
+            'price_data': {
+                'currency': order.currency.lower(),
+                'unit_amount': unit_amount,
+                'product_data': product_data,
+            },
+            'quantity': item.quantity,
+        })
+
+    # Add Delivery Fee line item if applicable
+    if order.delivery_fee > 0:
+        delivery_cents = int((order.delivery_fee * Decimal('100')).quantize(Decimal('1')))
+        line_items.append({
+            'price_data': {
+                'currency': order.currency.lower(),
+                'unit_amount': delivery_cents,
+                'product_data': {
+                    'name': 'Direct Doorstep Delivery Fee',
+                    'description': 'Flat-rate doorstep delivery to your address',
+                },
+            },
+            'quantity': 1,
+        })
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=line_items,
+        mode='payment',
+        customer_email=order.customer_email,
+        client_reference_id=order.order_number,
+        metadata={
+            'order_number': order.order_number,
+            'access_token': str(order.access_token),
+        },
+        success_url=success_url,
+        cancel_url=cancel_url,
+    )
+
+    order.stripe_session_id = session.id
+    order.save(update_fields=['stripe_session_id'])
+    return session
+
+
+@csrf_exempt
 @require_POST
 def place_order(request):
     """
@@ -315,9 +427,9 @@ def place_order(request):
     Creates Order & OrderItem records inside an atomic database transaction.
     Recalculates prices using trusted database values.
     Routes to the appropriate payment provider:
-    - Stripe: returns Stripe Checkout session URL
-    - PayPal: returns PayPal order approval flow
-    - Cash on Collection: confirms order and redirects to success page
+    - Stripe: Creates Stripe Checkout Session dynamically & returns URL
+    - Cash on Collection: Confirms order and returns redirect URL
+    - PayPal: Returns PayPal order creation endpoint
     """
     cart_items, subtotal, delivery_fee, grand_total, total_qty = _calculate_cart_totals(
         request.session,
@@ -325,9 +437,10 @@ def place_order(request):
     )
 
     if not cart_items:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'error', 'message': 'Your basket is empty.'}, status=400)
-        messages.error(request, "Your basket is empty.")
+        err_msg = 'Your basket is empty or the selected dishes are currently unavailable.'
+        if _is_ajax(request):
+            return JsonResponse({'status': 'error', 'message': err_msg}, status=400)
+        messages.error(request, err_msg)
         return redirect('menu_list')
 
     # Extract & validate customer fields
@@ -341,14 +454,14 @@ def place_order(request):
 
     if not customer_name or not customer_email or not customer_phone:
         err_msg = "Please provide your Full Name, Email, and Telephone Number."
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if _is_ajax(request):
             return JsonResponse({'status': 'error', 'message': err_msg}, status=400)
         messages.error(request, err_msg)
         return redirect('payment_gatway:checkout')
 
     if order_type == 'delivery' and not delivery_address:
         err_msg = "Please provide a complete delivery destination address."
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if _is_ajax(request):
             return JsonResponse({'status': 'error', 'message': err_msg}, status=400)
         messages.error(request, err_msg)
         return redirect('payment_gatway:checkout')
@@ -372,7 +485,7 @@ def place_order(request):
                 delivery_fee=delivery_fee,
                 discount_amount=Decimal('0.00'),
                 grand_total=grand_total,
-                currency=settings.RESTAURANT_CURRENCY,
+                currency=getattr(settings, 'RESTAURANT_CURRENCY', 'USD'),
                 payment_method=payment_method,
                 payment_status='pending',
                 order_status='received',
@@ -407,45 +520,59 @@ def place_order(request):
                 raw_response='Cash on Collection selected. Payment due upon arrival.',
             )
             success_url = reverse('payment_gatway:order_success', kwargs={'access_token': order.access_token})
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            if _is_ajax(request):
                 return JsonResponse({
                     'status': 'success',
                     'payment_method': 'cash_on_collection',
                     'redirect_url': success_url,
+                    'order_number': order.order_number,
                 })
             return redirect(success_url)
 
         # B. Stripe Checkout Flow
         elif payment_method == 'stripe':
-            checkout_session_url = reverse('payment_gatway:stripe_create_session', kwargs={'access_token': order.access_token})
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'status': 'success',
-                    'payment_method': 'stripe',
-                    'create_session_url': checkout_session_url,
-                    'access_token': str(order.access_token),
-                })
-            return redirect(checkout_session_url)
+            try:
+                session = _create_stripe_session_for_order(request, order)
+                if _is_ajax(request):
+                    return JsonResponse({
+                        'status': 'success',
+                        'payment_method': 'stripe',
+                        'checkout_url': session.url,
+                        'create_session_url': reverse('payment_gatway:stripe_create_session', kwargs={'access_token': order.access_token}),
+                        'redirect_url': session.url,
+                        'access_token': str(order.access_token),
+                        'order_number': order.order_number,
+                    })
+                return redirect(session.url)
+            except Exception as stripe_err:
+                order.payment_status = 'failed'
+                order.save(update_fields=['payment_status'])
+                err_msg = f"Stripe Checkout error: {str(stripe_err)}"
+                if _is_ajax(request):
+                    return JsonResponse({'status': 'error', 'message': err_msg}, status=400)
+                messages.error(request, err_msg)
+                return redirect('payment_gatway:checkout')
 
         # C. PayPal Flow
         elif payment_method == 'paypal':
             paypal_create_url = reverse('payment_gatway:paypal_create_order', kwargs={'access_token': order.access_token})
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            if _is_ajax(request):
                 return JsonResponse({
                     'status': 'success',
                     'payment_method': 'paypal',
                     'create_order_url': paypal_create_url,
                     'access_token': str(order.access_token),
+                    'order_number': order.order_number,
                 })
-            # Standard redirect if JS disabled
             return redirect('payment_gatway:order_success', kwargs={'access_token': order.access_token})
 
     except Exception as e:
-        err_msg = f"Unable to create order. Please try again or call concierge. Error: {str(e)}"
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'error', 'message': err_msg}, status=500)
+        err_msg = f"Unable to place your order: {str(e)}"
+        if _is_ajax(request):
+            return JsonResponse({'status': 'error', 'message': err_msg}, status=400)
         messages.error(request, err_msg)
         return redirect('payment_gatway:checkout')
+
 
 
 # ==============================================================================
@@ -454,82 +581,28 @@ def place_order(request):
 
 def stripe_create_session(request, access_token):
     """
-    Creates a Stripe Checkout Session on the server using official Stripe SDK.
-    Stores Stripe session reference against the order and redirects to Stripe Checkout.
+    Direct endpoint to create / redirect to a Stripe Checkout Session.
+    Useful as fallback if frontend JS is bypassed or on direct retry.
     """
     order = get_object_or_404(Order, access_token=access_token)
 
-    domain_url = settings.SITE_URL.rstrip('/')
-    success_url = f"{domain_url}{reverse('payment_gatway:stripe_success')}?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{domain_url}{reverse('payment_gatway:stripe_cancel', kwargs={'access_token': order.access_token})}"
-
-    # Build line items for Stripe Checkout
-    line_items = []
-    for item in order.items.all():
-        line_items.append({
-            'price_data': {
-                'currency': order.currency.lower(),
-                'unit_amount': int(item.unit_price * 100),  # in cents
-                'product_data': {
-                    'name': item.item_name,
-                    'description': f"The Chesterfield Gourmet Selection ({item.item_name})",
-                },
-            },
-            'quantity': item.quantity,
-        })
-
-    # Add delivery fee line item if applicable
-    if order.delivery_fee > 0:
-        line_items.append({
-            'price_data': {
-                'currency': order.currency.lower(),
-                'unit_amount': int(order.delivery_fee * 100),
-                'product_data': {
-                    'name': 'Direct Doorstep Delivery Fee',
-                },
-            },
-            'quantity': 1,
-        })
+    if order.payment_status == 'paid':
+        return redirect('payment_gatway:order_success', kwargs={'access_token': order.access_token})
 
     try:
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=line_items,
-            mode='payment',
-            customer_email=order.customer_email,
-            client_reference_id=order.order_number,
-            metadata={
-                'order_number': order.order_number,
-                'access_token': str(order.access_token),
-            },
-            success_url=success_url,
-            cancel_url=cancel_url,
-        )
-
-        order.stripe_session_id = checkout_session.id
-        order.save(update_fields=['stripe_session_id'])
-
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'success', 'url': checkout_session.url})
-
-        return redirect(checkout_session.url)
-
+        session = _create_stripe_session_for_order(request, order)
+        if _is_ajax(request):
+            return JsonResponse({'status': 'success', 'url': session.url, 'checkout_url': session.url})
+        return redirect(session.url)
     except Exception as e:
-        # If test keys not yet populated in .env, provide an educational sandbox fallback
-        messages.warning(request, f"Stripe Notice: {str(e)}. Simulating Stripe Sandbox authorization.")
-        Payment.objects.create(
-            order=order,
-            provider='stripe',
-            transaction_id=f"STRIPE_TEST_{uuid.uuid4().hex[:8].upper()}",
-            amount=order.grand_total,
-            currency=order.currency,
-            payment_status='completed',
-            raw_response=f"Test Mode simulation: {str(e)}",
-        )
-        order.payment_status = 'paid'
-        order.order_status = 'received'
-        order.save(update_fields=['payment_status', 'order_status'])
-        return redirect('payment_gatway:order_success', kwargs={'access_token': order.access_token})
+        order.payment_status = 'failed'
+        order.save(update_fields=['payment_status'])
+        err_msg = f"Unable to create Stripe Checkout session: {str(e)}"
+        if _is_ajax(request):
+            return JsonResponse({'status': 'error', 'message': err_msg}, status=400)
+        messages.error(request, err_msg)
+        return redirect('payment_gatway:checkout')
+
 
 
 def stripe_success(request):
@@ -546,25 +619,46 @@ def stripe_success(request):
         order_number = session.metadata.get('order_number')
         access_token_str = session.metadata.get('access_token')
 
-        order = Order.objects.get(order_number=order_number)
+        order = None
+        if order_number:
+            order = Order.objects.filter(order_number=order_number).first()
+        if not order and access_token_str:
+            try:
+                order = Order.objects.filter(access_token=uuid.UUID(access_token_str)).first()
+            except (ValueError, TypeError):
+                pass
+        if not order:
+            order = Order.objects.filter(stripe_session_id=session_id).first()
+
+        if not order:
+            messages.error(request, "Could not locate customer order for this Stripe session.")
+            return redirect('payment_gatway:checkout')
 
         # Idempotent check: only update if not already marked paid
         if session.payment_status == 'paid':
             if order.payment_status != 'paid':
                 order.payment_status = 'paid'
-                order.order_status = 'received'
+                order.order_status = 'confirmed'
                 order.stripe_payment_intent = str(session.payment_intent or '')
-                order.save(update_fields=['payment_status', 'order_status', 'stripe_payment_intent'])
+                order.paid_at = timezone.now()
+                order.save(update_fields=['payment_status', 'order_status', 'stripe_payment_intent', 'paid_at'])
 
-                Payment.objects.create(
+                tx_id = session.payment_intent or session_id
+                Payment.objects.get_or_create(
                     order=order,
-                    provider='stripe',
-                    transaction_id=session.payment_intent or session_id,
-                    amount=Decimal(str(session.amount_total / 100)),
-                    currency=session.currency.upper(),
-                    payment_status='completed',
-                    raw_response=json.dumps(dict(session)),
+                    transaction_id=tx_id,
+                    defaults={
+                        'provider': 'stripe',
+                        'amount': Decimal(str(session.amount_total / 100)),
+                        'currency': session.currency.upper(),
+                        'payment_status': 'completed',
+                        'raw_response': json.dumps({'session_id': session.id, 'payment_status': session.payment_status}),
+                    }
                 )
+
+                # Clear cart from guest session upon successful payment
+                request.session['cart'] = {}
+                request.session.modified = True
 
             return redirect('payment_gatway:order_success', kwargs={'access_token': order.access_token})
         else:
@@ -579,6 +673,18 @@ def stripe_success(request):
 def stripe_cancel(request, access_token):
     """Handles user cancellation at Stripe Checkout."""
     order = get_object_or_404(Order, access_token=access_token)
+    if order.payment_status == 'pending':
+        cart = _get_cart(request.session)
+        for item in order.items.all():
+            if item.menu_item:
+                str_id = str(item.menu_item.id)
+                cart[str_id] = {
+                    'quantity': item.quantity,
+                    'name': item.item_name,
+                    'price': str(item.unit_price),
+                }
+        request.session.modified = True
+
     messages.info(request, "Your card checkout was cancelled. You may select another payment option or review your order.")
     return redirect('payment_gatway:checkout')
 
@@ -592,7 +698,7 @@ def stripe_webhook(request):
     Ensures idempotent order fulfilment.
     """
     payload = request.body
-    sig_header = request.headers.get('STRIPE_SIGNATURE')
+    sig_header = request.headers.get('stripe-signature') or request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
     event = None
@@ -612,7 +718,7 @@ def stripe_webhook(request):
     event_type = event.get('type') if isinstance(event, dict) else event.type
     event_data = event.get('data', {}).get('object', {}) if isinstance(event, dict) else event.data.object
 
-    if event_type == 'checkout.session.completed':
+    if event_type in ['checkout.session.completed', 'checkout.session.async_payment_succeeded']:
         session = event_data
         order_number = session.get('metadata', {}).get('order_number') or session.get('client_reference_id')
         session_id = session.get('id')
@@ -634,7 +740,8 @@ def stripe_webhook(request):
                 order.payment_status = 'paid'
                 order.order_status = 'confirmed'
                 order.paid_at = timezone.now()
-                order.save(update_fields=['payment_status', 'order_status', 'paid_at'])
+                order.stripe_payment_intent = session.get('payment_intent') or ''
+                order.save(update_fields=['payment_status', 'order_status', 'paid_at', 'stripe_payment_intent'])
 
             Payment.objects.get_or_create(
                 order=order,
@@ -643,10 +750,19 @@ def stripe_webhook(request):
                 defaults={
                     'amount': Decimal(str(session.get('amount_total', 0) / 100)),
                     'currency': session.get('currency', 'USD').upper(),
-                    'payment_status': 'paid',
-                    'raw_response': json.dumps(session),
+                    'payment_status': 'completed',
+                    'raw_response': json.dumps(session if isinstance(session, dict) else dict(session)),
                 }
             )
+
+    elif event_type == 'checkout.session.async_payment_failed':
+        session = event_data
+        order_number = session.get('metadata', {}).get('order_number') or session.get('client_reference_id')
+        if order_number:
+            order = Order.objects.filter(order_number=order_number).first()
+            if order and order.payment_status != 'paid':
+                order.payment_status = 'failed'
+                order.save(update_fields=['payment_status'])
 
     return HttpResponse(status=200)
 

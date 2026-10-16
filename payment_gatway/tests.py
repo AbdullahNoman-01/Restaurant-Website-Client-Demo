@@ -529,3 +529,120 @@ class RestaurantOrderingSystemTestCase(TestCase):
         # Online order skipped
         online_order.refresh_from_db()
         self.assertEqual(online_order.payment_status, 'pending')
+
+    # ==========================================================================
+    # 8. Dynamic Stripe Checkout Tests
+    # ==========================================================================
+    @patch('stripe.checkout.Session.create')
+    def test_dynamic_stripe_checkout_from_place_order(self, mock_stripe_create):
+        """
+        Verify that placing an order with Stripe creates dynamic line items
+        using current database prices in cents, Decimal-safe arithmetic,
+        and returns the checkout_url in JSON.
+        """
+        mock_stripe_create.return_value = MagicMock(
+            id='cs_test_dynamic_session_999',
+            url='https://checkout.stripe.com/c/pay/cs_test_dynamic_session_999'
+        )
+
+        # 1. Add multiple items to the cart
+        self.client.post(
+            reverse('payment_gatway:cart_add'),
+            data=json.dumps({'item_id': self.dish1.id, 'quantity': 2}),  # 2 x $38.00 = $76.00
+            content_type='application/json'
+        )
+        self.client.post(
+            reverse('payment_gatway:cart_add'),
+            data=json.dumps({'item_id': self.dish2.id, 'quantity': 1}),  # 1 x $24.00 = $24.00
+            content_type='application/json'
+        )
+
+        # 2. Submit checkout via AJAX for Stripe payment
+        order_payload = {
+            'customer_name': 'Eleanor Vance',
+            'customer_email': 'eleanor@vance-estate.co.uk',
+            'customer_phone': '+44 7922 334455',
+            'order_type': 'delivery',
+            'delivery_address': 'Hill House, Gloucestershire, UK',
+            'special_notes': 'Please ring the front garden gate bell.',
+            'payment_method': 'stripe',
+        }
+
+        response = self.client.post(
+            reverse('payment_gatway:place_order'),
+            data=order_payload,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+            HTTP_ACCEPT='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['payment_method'], 'stripe')
+        self.assertEqual(data['checkout_url'], 'https://checkout.stripe.com/c/pay/cs_test_dynamic_session_999')
+
+        # 3. Verify Stripe SDK call parameters: dynamic line items built from database
+        self.assertTrue(mock_stripe_create.called)
+        call_kwargs = mock_stripe_create.call_args[1]
+
+        self.assertEqual(call_kwargs['mode'], 'payment')
+        self.assertEqual(call_kwargs['customer_email'], 'eleanor@vance-estate.co.uk')
+        self.assertEqual(len(call_kwargs['line_items']), 2)  # subtotal is $100 > $50 so free delivery
+
+        # Check line item 1
+        item1 = call_kwargs['line_items'][0]
+        self.assertEqual(item1['price_data']['unit_amount'], 3800)  # $38.00 in cents
+        self.assertEqual(item1['price_data']['currency'], 'usd')
+        self.assertEqual(item1['price_data']['product_data']['name'], 'Roasted Venison Loin')
+        self.assertEqual(item1['quantity'], 2)
+
+        # Check line item 2
+        item2 = call_kwargs['line_items'][1]
+        self.assertEqual(item2['price_data']['unit_amount'], 2400)  # $24.00 in cents
+        self.assertEqual(item2['price_data']['currency'], 'usd')
+        self.assertEqual(item2['price_data']['product_data']['name'], 'Wild Mushroom Risotto')
+        self.assertEqual(item2['quantity'], 1)
+
+        # 4. Verify database order persisted and cart cleared
+        order = Order.objects.get(customer_email='eleanor@vance-estate.co.uk')
+        self.assertEqual(order.subtotal, Decimal('100.00'))
+        self.assertEqual(order.delivery_fee, Decimal('0.00'))
+        self.assertEqual(order.grand_total, Decimal('100.00'))
+        self.assertEqual(order.payment_status, 'pending')
+        self.assertEqual(order.stripe_session_id, 'cs_test_dynamic_session_999')
+
+        # Cart in session should be empty
+        cart_res = self.client.get(reverse('payment_gatway:cart_count'))
+        self.assertEqual(cart_res.json()['cart_count'], 0)
+
+    def test_tampered_frontend_price_is_ignored(self):
+        """Ensure client cannot tamper with prices; database price is always enforced."""
+        # Add dish1 ($38.00)
+        self.client.post(
+            reverse('payment_gatway:cart_add'),
+            data=json.dumps({'item_id': self.dish1.id, 'quantity': 1}),
+            content_type='application/json'
+        )
+
+        # Customer attempts to send fake manipulated subtotal in request
+        order_payload = {
+            'customer_name': 'Hacker Bob',
+            'customer_email': 'bob@tamper.test',
+            'customer_phone': '+44 7111 222333',
+            'order_type': 'collection',
+            'payment_method': 'cash_on_collection',
+            'subtotal': '0.01',      # Malicious attempted price
+            'grand_total': '0.01',   # Malicious attempted price
+        }
+        res = self.client.post(
+            reverse('payment_gatway:place_order'),
+            data=order_payload,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(res.status_code, 200)
+
+        order = Order.objects.get(customer_email='bob@tamper.test')
+        # Server must have calculated using database price ($38.00), NOT $0.01
+        self.assertEqual(order.subtotal, Decimal('38.00'))
+        self.assertEqual(order.grand_total, Decimal('38.00'))
+

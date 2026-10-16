@@ -39,7 +39,7 @@ class OrderAdminForm(forms.ModelForm):
             if old_order.payment_status != 'paid' and payment_status == 'paid':
                 if payment_method in ['stripe', 'paypal']:
                     has_verified_payment = self.instance.payments.filter(
-                        payment_status='paid',
+                        payment_status__in=['paid', 'completed'],
                         provider=payment_method
                     ).exists()
                     if not has_verified_payment:

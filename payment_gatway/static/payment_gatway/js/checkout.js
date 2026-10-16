@@ -187,20 +187,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(checkoutForm.action, {
                     method: 'POST',
                     headers: {
+                        'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRFToken': csrfToken
                     },
                     body: formData
                 });
 
-                const data = await response.json();
+                const contentType = response.headers.get('content-type') || '';
+                let data = null;
+
+                if (contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    // Check if server redirected to a success or order confirmation page
+                    if (response.ok && response.redirected && response.url) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    const text = await response.text();
+                    console.error('Non-JSON response from server:', text.substring(0, 300));
+                    throw new Error(`Server returned unexpected format (${response.status}). Please check network or try again.`);
+                }
 
                 if (data.status === 'success') {
                     if (data.payment_method === 'cash_on_collection' && data.redirect_url) {
                         window.location.href = data.redirect_url;
-                    } else if (data.payment_method === 'stripe' && data.create_session_url) {
-                        // Redirect to the server endpoint that creates the Stripe Checkout session
-                        window.location.href = data.create_session_url;
+                    } else if (data.payment_method === 'stripe') {
+                        // Redirect directly to Stripe Hosted Checkout URL or session creation endpoint
+                        const targetUrl = data.checkout_url || data.create_session_url || data.redirect_url;
+                        if (targetUrl) {
+                            window.location.href = targetUrl;
+                        } else {
+                            throw new Error('Stripe Checkout URL not returned by server.');
+                        }
                     } else if (data.payment_method === 'paypal' && data.create_order_url) {
                         window.location.href = data.create_order_url;
                     } else if (data.redirect_url) {
@@ -213,12 +233,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 console.error('Submission error:', err);
-                showError('Network connectivity error. Please verify your connection or call the concierge.');
+                showError(err.message || 'Network connectivity error. Please verify your connection or call the concierge.');
                 btnPlaceOrder.disabled = false;
                 btnSubmitText.textContent = 'Place Order & Pay';
             }
         });
     }
+
 
     // 5. PayPal SDK Smart Buttons Integration (if window.paypal is active)
     let paypalRendered = false;

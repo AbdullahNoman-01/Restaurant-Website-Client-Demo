@@ -117,8 +117,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     openBookingBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            openBookingModal();
+            if (bookingBackdrop) {
+                e.preventDefault();
+                openBookingModal();
+            } else if (btn.tagName === 'BUTTON') {
+                window.location.href = '/reservations/';
+            }
         });
     });
 
@@ -182,8 +186,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     openMenuBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            openMenuModal();
+            if (menuBackdrop) {
+                e.preventDefault();
+                openMenuModal();
+            }
         });
     });
 

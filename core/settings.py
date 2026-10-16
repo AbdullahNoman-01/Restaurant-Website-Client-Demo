@@ -16,7 +16,17 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-m_zq0uw@fd2t0bpm6j#b@34+sl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*'] if DEBUG else os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost,.onrender.com').split(',')
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
+
+# Render & HTTPS Reverse Proxy configuration
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://*.onrender.com,http://127.0.0.1:8000,http://localhost:8000,http://127.0.0.1,http://localhost'
+).split(',')
+CSRF_TRUSTED_ORIGINS = [orig.strip() for orig in CSRF_TRUSTED_ORIGINS if orig.strip()]
 
 
 # Application definition
