@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'payment_gatway/css/checkout.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<main class="luxury-checkout-page" id="checkoutApp">
+    <div class="checkout-container">
+        
+        <!-- Luxury Progress Stepper (Image 2) -->
+        <nav class="checkout-stepper-bar" aria-label="Checkout Progress">
+            <div class="step-item step-completed">
+                <div class="step-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <a href="{% url 'payment_gatway:cart' %}" class="step-label">Shopping cart</a>
+            </div>
+            
+            <div class="step-connector active"></div>
+
+            <div class="step-item step-current">
+                <div class="step-icon">2</div>
+                <span class="step-label">Checkout</span>
+            </div>
+
+            <div class="step-connector"></div>
+
+            <div class="step-item step-upcoming">
+                <div class="step-icon">3</div>
+                <span class="step-label">Order Confirmed</span>
+            </div>
+        </nav>
+
+        <!-- Main 2-Column Checkout Layout -->
+        <form id="checkoutForm" method="POST" action="{% url 'payment_gatway:place_order' %}" class="checkout-grid-layout">
+            {% csrf_token %}
+
+            <!-- LEFT COLUMN: Payment & Customer Information -->
+            <div class="checkout-left-col">
+
+                <!-- 1. Payment Method Selection -->
+                <div class="checkout-card">
+                    <div class="card-header-row">
+                        <h2 class="card-title">Payment Method</h2>
+                        <span class="secure-badge">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            256-Bit SSL Secured
+                        </span>
+                    </div>
+
+                    <div class="payment-methods-stack">
+                        <!-- Option A: Stripe Credit / Debit Card -->
+                        <label class="payment-method-option active" for="payMethodStripe">
+                            <div class="method-radio-box">
+                                <input type="radio" id="payMethodStripe" name="payment_method" value="stripe" checked>
+                                <span class="custom-radio"></span>
+                            </div>
+                            <div class="method-body">
+                                <div class="method-title-line">
+                                    <span class="method-name">Credit or Debit Card</span>
+                                    <div class="card-brand-icons">
+                                        <span class="brand-tag visa">VISA</span>
+                                        <span class="brand-tag mc">MC</span>
+                                        <span class="brand-tag amex">AMEX</span>
+                                    </div>
+                                </div>
+                                <p class="method-desc">Pay securely using Stripe Checkout with instant card verification (Test Mode supported).</p>
+                            </div>
+                        </label>
+
+                        <!-- Option B: PayPal -->
+                        <label class="payment-method-option" for="payMethodPayPal">
+                            <div class="method-radio-box">
+                                <input type="radio" id="payMethodPayPal" name="payment_method" value="paypal">
+                                <span class="custom-radio"></span>
+                            </div>
+                            <div class="method-body">
+                                <div class="method-title-line">
+                                    <span class="method-name">PayPal</span>
+                                    <span class="brand-tag paypal">PayPal</span>
+                                </div>
+                                <p class="method-desc">Fast and protected checkout via your PayPal wallet or PayPal balance (Sandbox Mode).</p>
+                            </div>
+                        </label>
+
+                        <!-- Option C: Cash on Collection -->
+                        <label class="payment-method-option" for="payMethodCash">
+                            <div class="method-radio-box">
+                                <input type="radio" id="payMethodCash" name="payment_method" value="cash_on_collection">
+                                <span class="custom-radio"></span>
+                            </div>
+                            <div class="method-body">
+                                <div class="method-title-line">
+                                    <span class="method-name">Cash on Collection</span>
+                                    <span class="brand-tag cash">Restaurant Pay</span>
+                                </div>
+                                <p class="method-desc">Pay at the Chesterfield counter when collecting your freshly prepared dining package.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. Billing & Contact Details -->
+                <div class="checkout-card">
+                    <h2 class="card-title">Billing & Guest Details</h2>
+
+                    <div class="form-fields-grid">
+                        <div class="form-field-group full-width">
+                            <label for="custName" class="field-label">Full Name <span class="req">*</span></label>
+                            <input type="text" id="custName" name="customer_name" class="luxury-input" placeholder="e.g. Lord Alexander Wright" required>
+                        </div>
+
+                        <div class="form-field-group">
+                            <label for="custEmail" class="field-label">Email Address <span class="req">*</span></label>
+                            <input type="email" id="custEmail" name="customer_email" class="luxury-input" placeholder="e.g. alexander@example.com" required>
+                        </div>
+
+                        <div class="form-field-group">
+                            <label for="custPhone" class="field-label">Mobile Number <span class="req">*</span></label>
+                            <input type="tel" id="custPhone" name="customer_phone" class="luxury-input" placeholder="e.g. +44 7911 123456" required>
+                        </div>
+                    </div>
+
+                    <!-- Order Type: Collection vs Delivery -->
+                    <div class="order-type-picker-box">
+                        <span class="field-label">Fulfillment Choice</span>
+                        <div class="type-toggle-pills">
+                            <button type="button" class="type-pill active" id="pillCollection" data-type="collection">
+                                <span class="pill-dot"></span>
+                                <span>Collection (Takeaway)</span>
+                            </button>
+                            <button type="button" class="type-pill" id="pillDelivery" data-type="delivery">
+                                <span class="pill-dot"></span>
+                                <span>Delivery ($5.00 / Free over $50)</span>
+                            </button>
+                        </div>
+                        <input type="hidden" name="order_type" id="orderTypeInput" value="collection">
+                    </div>
+
+                    <!-- Delivery Address (Collapsible if Delivery selected) -->
+                    <div class="form-field-group full-width" id="deliveryAddressGroup" style="display: none;">
+                        <label for="deliveryAddress" class="field-label">Delivery Street Address & Postcode <span class="req">*</span></label>
+                        <input type="text" id="deliveryAddress" name="delivery_address" class="luxury-input" placeholder="Street, apartment, city, and UK postcode">
+                    </div>
+
+                    <!-- Additional Information / Notes -->
+                    <div class="form-field-group full-width">
+                        <label for="orderNotes" class="field-label">Order / Delivery Note (Optional)</label>
+                        <textarea id="orderNotes" name="special_notes" rows="3" class="luxury-textarea" placeholder="Special dietary requests, culinary preferences, or delivery instructions..."></textarea>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Order Details & Price Summary -->
+            <div class="checkout-right-col">
+                <div class="order-summary-card">
+                    
+                    <h2 class="card-title">Order Details</h2>
+
+                    <!-- Restaurant Location Banner (Image 2) -->
+                    <div class="order-location-badge">
+                        <div class="loc-pin-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </div>
+                        <div class="loc-details">
+                            <span class="loc-kicker">Ordering from</span>
+                            <span class="loc-title">The Chesterfield Kitchen & Bar</span>
+                            <span class="loc-sub" id="fulfillmentEstimate">Collection ready in 25–35 mins</span>
+                        </div>
+                    </div>
+
+                    <!-- Itemized List (Image 2) -->
+                    <div class="summary-items-header">
+                        <span class="header-label">Your items</span>
+                        <a href="{% url 'payment_gatway:cart' %}" class="edit-cart-link">Edit Cart</a>
+                    </div>
+
+                    <div class="summary-items-list">
+                        {% for item in cart_items %}
+                            <div class="summary-item-row">
+                                <div class="sum-item-img-wrap">
+                                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="sum-item-img">
+                                </div>
+                                <div class="sum-item-info">
+                                    <h4 class="sum-item-title">{{ item.name }}</h4>
+                                    <span class="sum-item-meta">{{ item.quantity }} × ${{ item.unit_price|floatformat:2 }}</span>
+                                </div>
+                                <div class="sum-item-price">
+                                    ${{ item.line_total|floatformat:2 }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="summary-pricing-stack">
+                        <div class="price-row">
+                            <span class="p-label">Subtotal</span>
+                            <span class="p-value" id="summarySubtotal">${{ subtotal|floatformat:2 }}</span>
+                        </div>
+
+                        <div class="price-row">
+                            <span class="p-label">Delivery Fee</span>
+                            <span class="p-value" id="summaryDeliveryFee">
+                                {% if delivery_fee == 0 %}
+                                    <span class="free-pill">FREE</span>
+                                {% else %}
+                                    ${{ delivery_fee|floatformat:2 }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="price-row total-highlight">
+                            <span class="p-label">Total</span>
+                            <span class="p-value gold-amount" id="summaryGrandTotal">${{ grand_total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Trigger -->
+                    <div class="checkout-action-zone">
+                        <button type="submit" class="btn-checkout-submit" id="btnPlaceOrder">
+                            <span id="btnSubmitText">Place Order &amp; Pay</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+
+                        <!-- PayPal Button Container (Used when PayPal active) -->
+                        <div id="paypalButtonsContainer" style="display: none; margin-top: 14px;"></div>
+                        <div id="checkoutErrorMsg" class="checkout-err-alert" style="display: none;"></div>
+                    </div>
+
+                    <!-- Accepted Badges -->
+                    <div class="accepted-cards-footer">
+                        <div class="cards-icons-row">
+                            <span class="card-icon-pill">VISA</span>
+                            <span class="card-icon-pill">Mastercard</span>
+                            <span class="card-icon-pill">Amex</span>
+                            <span class="card-icon-pill">PayPal</span>
+                            <span class="card-icon-pill">Cash</span>
+                        </div>
+                        <p class="terms-note">By placing your order, you agree to our Terms of Service &amp; Kitchen Policies.</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</main>
+{% endblock content %}
+
+{% block extra_js %}
+{% if paypal_client_id and paypal_client_id != 'mock_paypal_client_id' %}
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD"></script>
+{% endif %}
+<script src="{% static 'payment_gatway/js/checkout.js' %}"></script>
+{% endblock extra_js %}

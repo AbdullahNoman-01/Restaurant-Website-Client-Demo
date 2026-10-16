@@ -60,10 +60,11 @@
 
             <!-- Right CTA Button -->
             <div class="header-cta">
-                <button type="button" class="btn-outline-gold header-order-btn open-booking-modal" id="headerBookBtn" aria-label="View My Order">
+                <a href="{% url 'payment_gatway:cart' %}" class="btn-outline-gold header-order-btn" id="headerBookBtn" aria-label="View My Order">
                     <img src="{% static 'media/my_order_logo_2x.png' %}" alt="Order Cart" class="order-btn-icon" width="22" height="19">
                     <span class="order-btn-text">My Order</span>
-                </button>
+                    <span class="header-cart-badge" id="headerCartCount" style="display: none;">0</span>
+                </a>
             </div>
         </div>
     </header>

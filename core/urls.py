@@ -35,6 +35,7 @@ urlpatterns = [
     path('gallery/', include('gallery.urls')),
     path('gallery/', gallery_views.gallery_view, name='gallery_view'),
     path('gallery/', gallery_views.gallery_view, name='gallery'),
+    path('', include('payment_gatway.urls')),
 ]
 
 if settings.DEBUG:

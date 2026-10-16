@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'payment_gatway/css/cart.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<main class="luxury-cart-page" id="cartApp">
+    <!-- Breadcrumb & Luxury Header -->
+    <section class="cart-hero-header">
+        <div class="cart-container">
+            <nav class="cart-breadcrumb" aria-label="Breadcrumb">
+                <a href="/">HOME</a>
+                <span class="crumb-separator">—</span>
+                <span class="crumb-current">BAG</span>
+            </nav>
+
+            <div class="cart-header-title-box">
+                <span class="cart-script-kicker">Your order</span>
+                <h1 class="cart-main-heading">When Ordering From $50 Delivery Is Free</h1>
+                
+                <div class="luxury-gold-divider">
+                    <span class="divider-line"></span>
+                    <span class="divider-diamond">◆</span>
+                    <span class="divider-line"></span>
+                </div>
+
+                <!-- Free Delivery Progress Tracker -->
+                <div class="delivery-perk-banner" id="deliveryPerkBanner" data-threshold="50">
+                    {% if cart_subtotal >= 50 %}
+                        <div class="perk-message perk-unlocked">
+                            <span class="perk-icon">✨</span>
+                            <span class="perk-text">Congratulations! You have unlocked <strong>Free Delivery</strong> for this order.</span>
+                        </div>
+                        <div class="perk-progress-bar">
+                            <div class="perk-fill" style="width: 100%;"></div>
+                        </div>
+                    {% else %}
+                        {% widthratio cart_subtotal 50 100 as progress_percent %}
+                        <div class="perk-message">
+                            <span class="perk-icon">🚚</span>
+                            <span class="perk-text">Add <strong>${{ delivery_difference|default:"0.00" }}</strong> more to enjoy complimentary Free Delivery!</span>
+                        </div>
+                        <div class="perk-progress-bar">
+                            <div class="perk-fill" style="width: {% if progress_percent %}{{ progress_percent }}{% else %}0{% endif %}%;"></div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Items Section -->
+    <section class="cart-content-section">
+        <div class="cart-container">
+            {% if cart_items %}
+                <div class="cart-table-wrapper" id="cartTableWrapper">
+                    <div class="cart-table-header">
+                        <div class="col-head col-product">YOUR ORDER ({{ cart_total_items }})</div>
+                        <div class="col-head col-price">PRICE</div>
+                        <div class="col-head col-qty">QUANTITY</div>
+                        <div class="col-head col-sum">SUM</div>
+                        <div class="col-head col-remove"></div>
+                    </div>
+
+                    <div class="cart-items-list" id="cartItemsList">
+                        {% for item in cart_items %}
+                            <article class="cart-row-item" id="cartRow-{{ item.id }}" data-item-id="{{ item.id }}">
+                                <div class="col-cell col-product">
+                                    <div class="item-thumb-wrapper">
+                                        <img src="{{ item.image_url }}" alt="{{ item.name }}" class="cart-item-img" loading="lazy">
+                                    </div>
+                                    <div class="item-info">
+                                        <h3 class="item-name">{{ item.name }}</h3>
+                                        {% if item.description %}
+                                            <p class="item-desc">{{ item.description|truncatewords:14 }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="col-cell col-price" data-label="Price">
+                                    <span class="unit-price-val">${{ item.price|floatformat:2 }}</span>
+                                </div>
+
+                                <div class="col-cell col-qty" data-label="Quantity">
+                                    <div class="cart-qty-stepper">
+                                        <button type="button" class="cart-qty-btn btn-minus" data-id="{{ item.id }}" aria-label="Decrease quantity">
+                                            <span>—</span>
+                                        </button>
+                                        <span class="cart-qty-display" id="qtyDisplay-{{ item.id }}">{{ item.quantity }}</span>
+                                        <button type="button" class="cart-qty-btn btn-plus" data-id="{{ item.id }}" aria-label="Increase quantity">
+                                            <span>+</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-cell col-sum" data-label="Line Total">
+                                    <span class="line-sum-val" id="lineSum-{{ item.id }}">${{ item.line_total|floatformat:2 }}</span>
+                                </div>
+
+                                <div class="col-cell col-remove">
+                                    <button type="button" class="cart-remove-btn" data-id="{{ item.id }}" aria-label="Remove {{ item.name }} from bag">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Cart Footer Actions & Totals -->
+                    <div class="cart-summary-footer">
+                        <div class="cart-actions-left">
+                            <a href="{% url 'menu_list' %}" class="btn-continue-choosing">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                                    <polyline points="12 19 5 12 12 5"></polyline>
+                                </svg>
+                                <span>CONTINUE CHOOSING</span>
+                            </a>
+                        </div>
+
+                        <div class="cart-summary-right">
+                            <div class="cart-totals-breakdown">
+                                <div class="total-row subtotal-row">
+                                    <span class="total-label">SUBTOTAL:</span>
+                                    <span class="total-val" id="cartSubtotalVal">${{ cart_subtotal|floatformat:2 }}</span>
+                                </div>
+                                <div class="total-row delivery-row">
+                                    <span class="total-label">ESTIMATED DELIVERY:</span>
+                                    <span class="total-val" id="cartDeliveryVal">
+                                        {% if estimated_delivery == 0 %}
+                                            <span class="free-text">FREE</span>
+                                        {% else %}
+                                            ${{ estimated_delivery|floatformat:2 }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="total-row grand-total-row">
+                                    <span class="total-label">TOTAL:</span>
+                                    <span class="total-val gold-highlight" id="cartGrandTotalVal">${{ cart_grand_total|floatformat:2 }}</span>
+                                </div>
+                            </div>
+
+                            <a href="{% url 'payment_gatway:checkout' %}" class="btn-luxury-checkout" id="btnCartCheckout">
+                                <span>CHECKOUT</span>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State (Hidden when items present) -->
+                <div class="cart-empty-state" id="cartEmptyState" style="display: none;">
+                    <div class="empty-icon-box">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C5A265" stroke-width="1.2">
+                            <circle cx="8" cy="21" r="1.5"></circle>
+                            <circle cx="19" cy="21" r="1.5"></circle>
+                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                        </svg>
+                    </div>
+                    <h2 class="empty-title">Your Dining Bag is Empty</h2>
+                    <p class="empty-subtitle">Explore our fine culinary offerings and add your favourite dishes to your order.</p>
+                    <a href="{% url 'menu_list' %}" class="btn-solid-gold">EXPLORE MENU</a>
+                </div>
+
+            {% else %}
+                <!-- Empty State Shown by Default -->
+                <div class="cart-empty-state" id="cartEmptyState">
+                    <div class="empty-icon-box">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C5A265" stroke-width="1.2">
+                            <circle cx="8" cy="21" r="1.5"></circle>
+                            <circle cx="19" cy="21" r="1.5"></circle>
+                            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                        </svg>
+                    </div>
+                    <h2 class="empty-title">Your Dining Bag is Empty</h2>
+                    <p class="empty-subtitle">Explore our fine culinary offerings and add your favourite dishes to your order.</p>
+                    <a href="{% url 'menu_list' %}" class="btn-solid-gold">EXPLORE MENU</a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</main>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'payment_gatway/js/cart.js' %}"></script>
+{% endblock extra_js %}

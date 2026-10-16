@@ -133,6 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reset Quantity
                 if (qtyVal) qtyVal.textContent = '1';
 
+                const modalAddBtn = document.getElementById('modalAddOrderBtn');
+                if (modalAddBtn) {
+                    modalAddBtn.setAttribute('data-id', id);
+                }
+
                 // Open Modal
                 modalBackdrop.classList.add('open');
                 modalBackdrop.setAttribute('aria-hidden', 'false');

@@ -275,6 +275,29 @@ button {
     color: var(--bg-gold);
 }
 
+.header-cart-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: var(--gold-primary);
+    color: var(--bg-dark);
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 800;
+    border-radius: 999px;
+    margin-left: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    line-height: 1;
+}
+
+.header-order-btn:hover .header-cart-badge {
+    background: #fff;
+    color: var(--bg-dark);
+}
+
 /* Mobile Hamburger Button */
 .mobile-menu-btn {
     display: none;

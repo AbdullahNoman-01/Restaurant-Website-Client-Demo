@@ -199,16 +199,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Close modals on Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeBookingModal();
-            closeMenuModal();
-            if (mainNav && mainNav.classList.contains('open')) {
-                mainNav.classList.remove('open');
-                mobileMenuBtn.classList.remove('active');
-                document.body.style.overflow = '';
+    // 5. Global Cart Badge Synchronization
+    const updateHeaderCartBadge = async () => {
+        const badge = document.getElementById('headerCartCount');
+        if (!badge) return;
+        try {
+            const res = await fetch('/cart/count/');
+            if (res.ok) {
+                const data = await res.json();
+                const count = data.cart_count || 0;
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-flex' : 'none';
             }
+        } catch (e) {
+            // silent fallback
         }
-    });
+    };
+    updateHeaderCartBadge();
 });

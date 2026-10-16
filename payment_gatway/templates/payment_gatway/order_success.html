@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'payment_gatway/css/order_success.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<main class="luxury-success-page" id="orderSuccessApp">
+    <div class="success-container">
+
+        <!-- Progress Stepper (All 3 complete) -->
+        <nav class="checkout-stepper-bar" aria-label="Order Progress">
+            <div class="step-item step-completed">
+                <div class="step-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <span class="step-label">Shopping cart</span>
+            </div>
+            
+            <div class="step-connector active"></div>
+
+            <div class="step-item step-completed">
+                <div class="step-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <span class="step-label">Checkout</span>
+            </div>
+
+            <div class="step-connector active"></div>
+
+            <div class="step-item step-current">
+                <div class="step-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <span class="step-label">Order Confirmed</span>
+            </div>
+        </nav>
+
+        <!-- Printable Receipt Box -->
+        <div class="order-receipt-card" id="printableReceipt">
+            
+            <!-- Receipt Header -->
+            <div class="receipt-header">
+                <div class="success-badge-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="16 12 12 8 8 12"></polyline>
+                        <line x1="12" y1="16" x2="12" y2="8"></line>
+                    </svg>
+                </div>
+                <span class="receipt-kicker">THE CHESTERFIELD KITCHEN &amp; BAR</span>
+                <h1 class="receipt-title">Order Confirmed</h1>
+                <p class="receipt-subtitle">Thank you for dining with us. Your culinary selections have been received by our kitchen brigade.</p>
+                
+                <div class="order-number-banner">
+                    <span class="banner-lbl">ORDER NUMBER:</span>
+                    <span class="order-num-tag" id="orderNum">{{ order.order_number }}</span>
+                    <button type="button" class="btn-copy-num" onclick="copyOrderNumber()" title="Copy Order Number">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notice Callouts -->
+            {% if is_cash %}
+                <div class="alert-notice alert-cash">
+                    <div class="notice-icon">🏷️</div>
+                    <div class="notice-body">
+                        <strong>Cash on Collection Notice:</strong>
+                        <p>Your order is confirmed and will be freshly cooked upon your arrival. Please present this order number and pay <strong>${{ order.grand_total|floatformat:2 }}</strong> when collecting at <strong>56 King Street, Manchester</strong>.</p>
+                    </div>
+                </div>
+            {% elif is_paid %}
+                <div class="alert-notice alert-paid">
+                    <div class="notice-icon">✓</div>
+                    <div class="notice-body">
+                        <strong>Payment Verified:</strong>
+                        <p>Your online payment via <strong>{{ order.get_payment_method_display }}</strong> has been securely confirmed. Our chefs are curating your meal.</p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert-notice alert-pending">
+                    <div class="notice-icon">⏳</div>
+                    <div class="notice-body">
+                        <strong>Payment Status: Pending</strong>
+                        <p>Your order is recorded with payment method <strong>{{ order.get_payment_method_display }}</strong> and is awaiting final clearance.</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Order Meta Grid -->
+            <div class="receipt-meta-grid">
+                <div class="meta-block">
+                    <span class="meta-label">Customer</span>
+                    <span class="meta-value font-highlight">{{ order.customer_name }}</span>
+                    <span class="meta-sub">{{ order.customer_email }}</span>
+                    <span class="meta-sub">{{ order.customer_phone }}</span>
+                </div>
+
+                <div class="meta-block">
+                    <span class="meta-label">Fulfillment</span>
+                    <span class="meta-value font-highlight">{{ order.get_order_type_display }}</span>
+                    {% if order.order_type == 'delivery' %}
+                        <span class="meta-sub">{{ order.delivery_address }}</span>
+                    {% else %}
+                        <span class="meta-sub">56 King Street, Manchester, UK</span>
+                    {% endif %}
+                </div>
+
+                <div class="meta-block">
+                    <span class="meta-label">Payment</span>
+                    <span class="meta-value font-highlight">{{ order.get_payment_method_display }}</span>
+                    <span class="meta-sub">Status: 
+                        <span class="status-pill status-{{ order.payment_status }}">{{ order.get_payment_status_display }}</span>
+                    </span>
+                </div>
+
+                <div class="meta-block">
+                    <span class="meta-label">Order Status</span>
+                    <span class="meta-value font-highlight">
+                        <span class="status-pill status-{{ order.order_status }}">{{ order.get_order_status_display }}</span>
+                    </span>
+                    <span class="meta-sub">{{ order.created_at|date:"d M Y, H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- Purchased Dishes Items Table -->
+            <div class="receipt-items-section">
+                <h3 class="section-title">Purchased Items</h3>
+
+                <div class="items-table">
+                    <div class="t-row t-head">
+                        <div class="t-col t-item">Dish Description</div>
+                        <div class="t-col t-unit">Price</div>
+                        <div class="t-col t-qty">Qty</div>
+                        <div class="t-col t-total">Total</div>
+                    </div>
+
+                    {% for item in items %}
+                        <div class="t-row t-body">
+                            <div class="t-col t-item">
+                                <div class="item-cell-wrap">
+                                    {% if item.item_image_url %}
+                                        <img src="{{ item.item_image_url }}" alt="{{ item.item_name }}" class="receipt-thumb">
+                                    {% endif %}
+                                    <span class="dish-title">{{ item.item_name }}</span>
+                                </div>
+                            </div>
+                            <div class="t-col t-unit">${{ item.unit_price|floatformat:2 }}</div>
+                            <div class="t-col t-qty">{{ item.quantity }}</div>
+                            <div class="t-col t-total">${{ item.line_total|floatformat:2 }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Financial Summary -->
+            <div class="receipt-totals-box">
+                <div class="totals-table">
+                    <div class="total-line">
+                        <span class="line-lbl">Subtotal:</span>
+                        <span class="line-val">${{ order.subtotal|floatformat:2 }}</span>
+                    </div>
+                    <div class="total-line">
+                        <span class="line-lbl">Delivery Fee:</span>
+                        <span class="line-val">
+                            {% if order.delivery_fee == 0 %}
+                                <span class="free-text">FREE</span>
+                            {% else %}
+                                ${{ order.delivery_fee|floatformat:2 }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="total-line grand-total-line">
+                        <span class="line-lbl">Grand Total:</span>
+                        <span class="line-val gold-total">${{ order.grand_total|floatformat:2 }} {{ order.currency }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Action Controls -->
+            <div class="receipt-actions-footer">
+                <button type="button" class="btn-receipt btn-print" onclick="window.print()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    <span>Print Receipt</span>
+                </button>
+
+                <a href="{% url 'menu_list' %}" class="btn-receipt btn-return">
+                    <span>Return to Menu</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+</main>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+function copyOrderNumber() {
+    const text = document.getElementById('orderNum').textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Order number ' + text + ' copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy order number:', err);
+    });
+}
+</script>
+{% endblock extra_js %}

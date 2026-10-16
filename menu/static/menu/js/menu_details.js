@@ -92,32 +92,118 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize for Standalone Page
     initQuantityCounter('pageQtyMinus', 'pageQtyPlus', 'pageQtyVal');
 
-    // 3. Add to Order Feedback
-    const initOrderBtn = (btnId) => {
+    // Utility: Get Django CSRF token
+    const getCsrf = () => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === 'csrftoken=') {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
+    const updateNavBadge = (count) => {
+        const badge = document.getElementById('headerCartCount');
+        if (badge) {
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'inline-flex' : 'none';
+        }
+    };
+
+    // Luxury Floating Cart Toast Notification
+    const showLuxuryToast = (message, cartUrl = '/cart/') => {
+        let toast = document.getElementById('luxuryCartToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'luxuryCartToast';
+            toast.className = 'luxury-cart-toast';
+            document.body.appendChild(toast);
+        }
+
+        toast.innerHTML = `
+            <div class="toast-content">
+                <div class="toast-icon">✓</div>
+                <div class="toast-text">
+                    <span class="toast-title">Added to Your Dining Bag</span>
+                    <span class="toast-desc">${message}</span>
+                </div>
+                <a href="${cartUrl}" class="toast-cta-btn">VIEW BAG →</a>
+                <button type="button" class="toast-close" onclick="this.closest('.luxury-cart-toast').classList.remove('show')">×</button>
+            </div>
+        `;
+
+        toast.classList.add('show');
+        clearTimeout(window.cartToastTimer);
+        window.cartToastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 5000);
+    };
+
+    // 3. Add to Order Feedback and AJAX Call
+    const initOrderBtn = (btnId, qtyValId) => {
         const orderBtn = document.getElementById(btnId);
         if (!orderBtn) return;
 
-        orderBtn.addEventListener('click', () => {
+        orderBtn.addEventListener('click', async () => {
+            const itemId = orderBtn.getAttribute('data-id');
+            const qtyEl = document.getElementById(qtyValId);
+            const quantity = qtyEl ? parseInt(qtyEl.textContent, 10) || 1 : 1;
+
+            if (!itemId) {
+                console.warn('No item ID found for Add to Order button.');
+                return;
+            }
+
             const originalHTML = orderBtn.innerHTML;
             orderBtn.disabled = true;
-            orderBtn.innerHTML = `
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                <span>ADDED TO ORDER!</span>
-            `;
-            orderBtn.style.backgroundColor = '#79E298';
-            orderBtn.style.color = '#0B1C10';
+            orderBtn.innerHTML = `<span>Adding to Bag...</span>`;
 
-            setTimeout(() => {
+            try {
+                const response = await fetch('/cart/add/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrf() || ''
+                    },
+                    body: JSON.stringify({ item_id: itemId, quantity: quantity })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    orderBtn.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>ADDED! GOING TO CART...</span>
+                    `;
+                    orderBtn.style.backgroundColor = '#79E298';
+                    orderBtn.style.color = '#0B1C10';
+                    updateNavBadge(data.cart_count);
+                    showLuxuryToast(`${quantity}x ${data.item_name || 'Dish'} added to your order!`, '/cart/');
+
+                    // Redirect directly to the Cart page as requested
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '/cart/';
+                    }, 350);
+                } else {
+                    alert(data.message || 'Could not add dish to bag.');
+                    orderBtn.innerHTML = originalHTML;
+                    orderBtn.disabled = false;
+                }
+            } catch (err) {
+                console.error('Error adding to order:', err);
                 orderBtn.innerHTML = originalHTML;
                 orderBtn.disabled = false;
-                orderBtn.style.backgroundColor = '';
-                orderBtn.style.color = '';
-            }, 1800);
+            }
         });
     };
 
-    initOrderBtn('modalAddOrderBtn');
-    initOrderBtn('pageOrderBtn');
+    initOrderBtn('modalAddOrderBtn', 'qtyVal');
+    initOrderBtn('pageOrderBtn', 'pageQtyVal');
 });
