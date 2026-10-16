@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from home.views import home_view
 
 def Base(request):
-    return render(request, 'base.html')
+    return home_view(request)

@@ -9,24 +9,24 @@
     --gold-light: #DFC088;
     --gold-dark: #9E7D43;
     --gold-glow: rgba(197, 162, 101, 0.35);
-    
+
     --bg-dark: #0A0C0E;
     --bg-bar: #080B09;
     --bg-card: #121417;
-    
+
     --text-white: #FFFFFF;
     --text-cream: #F5EFEB;
     --text-body: rgba(255, 255, 255, 0.78);
     --text-muted: rgba(255, 255, 255, 0.55);
-    
+
     --border-gold: rgba(197, 162, 101, 0.35);
     --border-subtle: rgba(255, 255, 255, 0.12);
-    
+
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-cinzel: 'Cinzel', serif;
     --font-script: 'Alex Brush', cursive;
     --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    
+
     --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     --shadow-gold: 0 6px 20px rgba(197, 162, 101, 0.25);
     --radius-sm: 2px;
@@ -34,7 +34,9 @@
 }
 
 /* CSS Reset & Core Baseline */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -229,6 +231,50 @@ button {
     transform: translateY(-1px);
 }
 
+/* Header My Order CTA Button with Food Cart Icon */
+.header-order-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 18px !important;
+    background: rgba(197, 162, 101, 0.08);
+    border: 1px solid var(--gold-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    transition: var(--transition-smooth);
+}
+
+.order-btn-icon {
+    width: 21px;
+    height: 18px;
+    margin-right: 2px;
+    object-fit: contain;
+    display: inline-block;
+    vertical-align: middle;
+    filter: drop-shadow(0 0 2px rgba(197, 162, 101, 0.5));
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), filter 0.3s ease;
+}
+
+.header-order-btn:hover .order-btn-icon {
+    transform: scale(1.15) translateY(-1px);
+    filter: drop-shadow(0 1px 4px rgba(7, 9, 8, 0.7));
+}
+
+.order-btn-text {
+    font-family: var(--font-sans);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--text-white);
+    transition: color 0.25s ease;
+    white-space: nowrap;
+}
+
+.header-order-btn:hover .order-btn-text {
+    color: var(--bg-gold);
+}
+
 /* Mobile Hamburger Button */
 .mobile-menu-btn {
     display: none;
@@ -296,22 +342,19 @@ button {
     position: absolute;
     inset: 0;
     /* Dual gradient: keeps right side appetizing while darkening left side for crisp text contrast */
-    background: 
-        linear-gradient(to right, 
-            rgba(8, 10, 12, 0.96) 0%, 
-            rgba(8, 10, 12, 0.90) 32%, 
-            rgba(8, 10, 12, 0.55) 60%, 
-            rgba(8, 10, 12, 0.20) 100%
-        ),
-        linear-gradient(to top, 
-            rgba(8, 10, 12, 0.95) 0%, 
-            rgba(8, 10, 12, 0.20) 25%, 
-            transparent 60%
-        ),
-        linear-gradient(to bottom, 
-            rgba(8, 10, 12, 0.75) 0%, 
-            transparent 28%
-        );
+    background:
+        linear-gradient(to right,
+            rgba(8, 10, 12, 0.96) 0%,
+            rgba(8, 10, 12, 0.90) 32%,
+            rgba(8, 10, 12, 0.55) 60%,
+            rgba(8, 10, 12, 0.20) 100%),
+        linear-gradient(to top,
+            rgba(8, 10, 12, 0.95) 0%,
+            rgba(8, 10, 12, 0.20) 25%,
+            transparent 60%),
+        linear-gradient(to bottom,
+            rgba(8, 10, 12, 0.75) 0%,
+            transparent 28%);
 }
 
 /* Hero Content Area */
@@ -482,7 +525,8 @@ button {
     flex-direction: column;
 }
 
-.feature-label, .feature-sub {
+.feature-label,
+.feature-sub {
     font-family: var(--font-sans);
     font-size: 0.70rem;
     font-weight: 700;
@@ -809,6 +853,7 @@ button {
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -820,6 +865,7 @@ button {
         opacity: 0;
         transform: translateY(25px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -833,17 +879,21 @@ button {
     .nav-links {
         gap: 20px;
     }
+
     .nav-link {
         font-size: 0.72rem;
         letter-spacing: 0.12em;
     }
+
     .btn-outline-gold {
         padding: 9px 18px;
         font-size: 0.7rem;
     }
+
     .bottom-bar-container {
         gap: 16px;
     }
+
     .info-block {
         font-size: 0.8rem;
     }
@@ -853,14 +903,15 @@ button {
     .site-header {
         padding: 18px 0;
     }
+
     .nav-container {
         padding: 0 24px;
     }
-    
+
     .mobile-menu-btn {
         display: flex;
     }
-    
+
     .header-cta {
         display: none;
     }
@@ -930,38 +981,47 @@ button {
     .brand-logo .logo-main {
         font-size: 1.25rem;
     }
+
     .hero-title {
         font-size: 2.6rem;
     }
+
     .title-line.script-text {
         font-size: 3rem;
     }
+
     .hero-description {
         font-size: 0.92rem;
     }
+
     .hero-cta-group {
         flex-direction: column;
         width: 100%;
         gap: 12px;
     }
+
     .btn-solid-gold,
     .btn-outline-light {
         width: 100%;
         justify-content: center;
         text-align: center;
     }
+
     .hero-features {
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
         width: 100%;
     }
+
     .feature-divider {
         display: none;
     }
+
     .form-row {
         grid-template-columns: 1fr;
     }
+
     .booking-modal-card,
     .menu-modal-card {
         padding: 24px 18px;

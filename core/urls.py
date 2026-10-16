@@ -9,10 +9,14 @@ from contact import views as contact_views
 from reservations import views as reservation_views
 from private_dining import views as private_dining_views
 from gallery import views as gallery_views
+from home import views as home_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', home_views.home_view, name='base'),
+    path('', home_views.home_view, name='home'),
     path('home/', include('home.urls')),
+    path('home/', home_views.home_view, name='home_view'),
     path('menu/', include('menu.urls')),
     path('menu/', menu_views.menu_list, name='menu_list'),
     path('menu/', menu_views.menu_list, name='menu'),
@@ -31,7 +35,6 @@ urlpatterns = [
     path('gallery/', include('gallery.urls')),
     path('gallery/', gallery_views.gallery_view, name='gallery_view'),
     path('gallery/', gallery_views.gallery_view, name='gallery'),
-    path('', views.Base, name='base'),
 ]
 
 if settings.DEBUG:

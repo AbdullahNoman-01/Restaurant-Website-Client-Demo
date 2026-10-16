@@ -1,0 +1,672 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'home/css/home.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="home-page-container">
+    <!-- ==========================================================================
+         1. HERO BANNER SECTION
+         ========================================================================== -->
+    {% comment %} <section class="home-hero-section" id="homeHero">
+        <div class="home-hero-bg" style="background-image: url('{% if hero %}{{ hero.get_bg_image_url }}{% else %}{% static 'media/hero-bg.jpg' %}{% endif %}');">
+            <div class="home-hero-overlay"></div>
+        </div>
+
+        <div class="home-hero-content">
+            <div class="hero-kicker-wrap">
+                <span class="gold-diamond">✦</span>
+                <span class="hero-kicker-text">{{ hero.kicker|default:"MODERN BRITISH CUISINE" }}</span>
+                <span class="gold-diamond">✦</span>
+            </div>
+
+            <h1 class="home-hero-title">
+                <span class="title-line">{{ hero.headline_line1|default:"Good food." }}</span>
+                <span class="title-line">{{ hero.headline_line2|default:"Great times." }}</span>
+                <span class="title-line script-text">{{ hero.headline_line3|default:"Made for sharing." }}</span>
+            </h1>
+
+            <p class="home-hero-desc">
+                {{ hero.description|default:"Welcome to The Chesterfield, a modern British kitchen and bar in the heart of Manchester. Seasonal ingredients, expertly crafted dishes, rare cellar reserves, and warm Victorian hospitality." }}
+            </p>
+
+            <div class="hero-cta-group">
+                <a href="{% url 'reservations' %}" class="btn-solid-gold">
+                    <span>{{ hero.button_primary_text|default:"BOOK A TABLE" }}</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+                <a href="{% url 'menu_list' %}" class="btn-outline-gold">
+                    {{ hero.button_secondary_text|default:"VIEW OUR MENU" }}
+                </a>
+            </div>
+
+            <!-- Hero Feature Badges -->
+            <div class="hero-feature-badges">
+                <div class="hero-badge-item">
+                    <span class="badge-icon">🌿</span>
+                    <div class="badge-labels">
+                        <span class="label-top">SEASONAL</span>
+                        <span class="label-bot">INGREDIENTS</span>
+                    </div>
+                </div>
+
+                <div class="badge-separator"></div>
+
+                <div class="hero-badge-item">
+                    <span class="badge-icon">🍷</span>
+                    <div class="badge-labels">
+                        <span class="label-top">CURATED</span>
+                        <span class="label-bot">WINE CELLAR</span>
+                    </div>
+                </div>
+
+                <div class="badge-separator"></div>
+
+                <div class="hero-badge-item">
+                    <span class="badge-icon">🏛️</span>
+                    <div class="badge-labels">
+                        <span class="label-top">WARM</span>
+                        <span class="label-bot">HOSPITALITY</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Bottom Info Bar -->
+        <div class="hero-info-bar">
+            <div class="info-bar-container">
+                <div class="info-bar-item">
+                    <span class="info-icon">📍</span>
+                    <span class="info-text">56 King Street, Manchester, M2 4WU</span>
+                </div>
+                <div class="info-bar-divider"></div>
+                <div class="info-bar-item">
+                    <span class="info-icon">⏰</span>
+                    <span class="info-text">Mon–Thu: 12pm–10pm | Fri–Sun: 12pm–11:30pm</span>
+                </div>
+                <div class="info-bar-divider"></div>
+                <div class="info-bar-item">
+                    <span class="info-icon">📞</span>
+                    <a href="tel:01618390640" class="info-link">0161 839 0640</a>
+                </div>
+            </div>
+        </div>
+    </section> {% endcomment %}
+    <main id="mainContent">
+
+        <section class="hero-section" id="home">
+            <!-- Background Image with Gradient Overlay -->
+            <div class="hero-background" style="background-image: url('{% static 'media/hero-bg.jpg' %}');">
+                <div class="hero-overlay"></div>
+            </div>
+
+            <!-- Hero Main Container -->
+            <div class="hero-container">
+                <div class="hero-content">
+                    <!-- Kicker / Category -->
+                    <span class="hero-kicker" id="heroKicker">MODERN BRITISH CUISINE</span>
+
+                    <!-- Main Headline -->
+                    <h1 class="hero-title" id="heroTitle">
+                        <span class="title-line">Good food.</span>
+                        <span class="title-line">Great times.</span>
+                        <span class="title-line script-text">Made for sharing.</span>
+                    </h1>
+
+                    <!-- Description Paragraph -->
+                    <p class="hero-description" id="heroDescription">
+                        Welcome to The Chesterfield, a modern British restaurant in the heart of the UK.
+                        Seasonal ingredients, expertly crafted dishes and warm hospitality.
+                    </p>
+
+                    <!-- Call To Action Buttons -->
+                    <div class="hero-cta-group">
+                        <button type="button" class="btn-solid-gold open-booking-modal" id="heroBookBtn">
+                            <span>BOOK A TABLE</span>
+                            <svg class="cta-arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+                        <a href="#menu" class="btn-outline-light open-menu-modal" id="heroMenuBtn">
+                            VIEW OUR MENU
+                        </a>
+                    </div>
+
+                    <!-- Feature Highlights -->
+                    <div class="hero-features" id="heroFeatures">
+                        <!-- Feature 1: Seasonal Ingredients -->
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
+                                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
+                                </svg>
+                            </div>
+                            <div class="feature-text">
+                                <span class="feature-label">SEASONAL</span>
+                                <span class="feature-sub">INGREDIENTS</span>
+                            </div>
+                        </div>
+
+                        <div class="feature-divider"></div>
+
+                        <!-- Feature 2: Carefully Curated Wines -->
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M8 22h8"></path>
+                                    <path d="M12 15v7"></path>
+                                    <path d="M5 3h14a7 7 0 0 1-7 7.5A7 7 0 0 1 5 3Z"></path>
+                                </svg>
+                            </div>
+                            <div class="feature-text">
+                                <span class="feature-label">CAREFULLY</span>
+                                <span class="feature-sub">CURATED WINES</span>
+                            </div>
+                        </div>
+
+                        <div class="feature-divider"></div>
+
+                        <!-- Feature 3: Warm Hospitality -->
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                            </div>
+                            <div class="feature-text">
+                                <span class="feature-label">WARM</span>
+                                <span class="feature-sub">HOSPITALITY</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Information Bar -->
+            <div class="hero-bottom-bar" id="heroBottomBar">
+                <div class="bottom-bar-container">
+                    <!-- Address / Location -->
+                    <div class="info-block" id="infoAddress">
+                        <span class="info-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </span>
+                        <span class="info-text">56 King Street, Manchester, M2 4WU</span>
+                    </div>
+
+                    <div class="info-separator"></div>
+
+                    <!-- Opening Hours -->
+                    <div class="info-block" id="infoHours">
+                        <span class="info-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </span>
+                        <div class="info-multiline">
+                            <span>Mon – Thu: 12pm – 10pm</span>
+                            <span>Fri – Sun: 12pm – 11pm</span>
+                        </div>
+                    </div>
+
+                    <div class="info-separator"></div>
+
+                    <!-- Contact Phone -->
+                    <div class="info-block" id="infoPhone">
+                        <span class="info-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                        </span>
+                        <a href="tel:01618390640" class="info-link">0161 839 0640</a>
+                    </div>
+
+                    <!-- Social Icons -->
+                    <div class="info-socials" id="infoSocials">
+                        <!-- Instagram -->
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Instagram">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                            </svg>
+                        </a>
+
+                        <!-- Facebook -->
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="Facebook">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                            </svg>
+                        </a>
+
+                        <!-- TripAdvisor -->
+                        <a href="https://tripadvisor.com" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="TripAdvisor">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="6.5" cy="13.5" r="3.5"></circle>
+                                <circle cx="17.5" cy="13.5" r="3.5"></circle>
+                                <circle cx="6.5" cy="13.5" r="1.5" fill="currentColor"></circle>
+                                <circle cx="17.5" cy="13.5" r="1.5" fill="currentColor"></circle>
+                                <path d="M12 7c-4 0-7 2-7 2h14s-3-2-7-2z"></path>
+                                <path d="M12 9l-2 4h4z"></path>
+                                <path d="M2.5 13.5c0-3.5 3-6.5 6.5-6.5m6 0c3.5 0 6.5 3 6.5 6.5"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================================================
+         CRITIC ACCOLADES STRIP
+         ========================================================================== -->
+    <section class="home-accolades-strip">
+        <div class="home-container">
+            <div class="accolades-grid">
+                {% for review in critic_reviews %}
+                <div class="accolade-card">
+                    <span class="accolade-stars">{{ review.rating_stars }}</span>
+                    <p class="accolade-quote">“{{ review.quote }}”</p>
+                    <div class="accolade-author">
+                        <strong class="author-name">{{ review.critic_name }}</strong>
+                        <span class="author-title">{{ review.reviewer_title }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="accolade-card">
+                    <span class="accolade-stars">★★★★★</span>
+                    <p class="accolade-quote">“Arthur Pendelton crafts modern British gastronomy with astonishing precision and reverence for northern artisanal heritage.”</p>
+                    <div class="accolade-author">
+                        <strong class="author-name">Michelin Guide UK</strong>
+                    </div>
+                </div>
+                <div class="accolade-card">
+                    <span class="accolade-stars">★★★★★</span>
+                    <p class="accolade-quote">“The Victorian banking hall is breathtaking, but the 45-day dry-aged beef and smoked Old Fashioned will stay with you forever.”</p>
+                    <div class="accolade-author">
+                        <strong class="author-name">The Times</strong>
+                    </div>
+                </div>
+                <div class="accolade-card">
+                    <span class="accolade-stars">★★★★★</span>
+                    <p class="accolade-quote">“Manchester’s most atmospheric culinary destination. The subterranean Bullion Vault is in a league of its own.”</p>
+                    <div class="accolade-author">
+                        <strong class="author-name">Manchester Evening News</strong>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         PREVIEW 1: ABOUT US & STORY
+         ========================================================================== -->
+    <section class="home-section home-about-preview" id="homeAboutSection">
+        <div class="home-container">
+            <div class="about-preview-grid">
+                <!-- Left: Story Narrative -->
+                <div class="about-narrative-col">
+                    <span class="section-kicker">HERITAGE & ARTISANAL ETHOS</span>
+                    <h2 class="section-heading">Our Story & Culinary Philosophy</h2>
+                    <div class="gold-flourish-divider align-left">
+                        <span class="flourish-line"></span>
+                        <span class="flourish-icon">♦</span>
+                        <span class="flourish-line"></span>
+                    </div>
+                    <p class="about-lead-text">
+                        Founded in 1884 within a restored Grade II* listed Victorian banking edifice on King Street, The Chesterfield marries grand architectural heritage with daring contemporary British gastronomy.
+                    </p>
+                    <p class="about-body-text">
+                        Executive Chef Arthur Pendelton works hand-in-hand with heritage livestock breeders, small-boat Cornish fishermen, and Cheshire organic growers to celebrate the rich tapestry of the British seasons.
+                    </p>
+
+                    <!-- Key Stats / Pillars Row -->
+                    <div class="about-stats-row">
+                        {% for stat in about_stats %}
+                        <div class="about-stat-pill">
+                            <span class="stat-num">{{ stat.number }}</span>
+                            <span class="stat-lbl">{{ stat.label }}</span>
+                        </div>
+                        {% empty %}
+                        <div class="about-stat-pill">
+                            <span class="stat-num">15+</span>
+                            <span class="stat-lbl">Years of Craft</span>
+                        </div>
+                        <div class="about-stat-pill">
+                            <span class="stat-num">100%</span>
+                            <span class="stat-lbl">British Sourcing</span>
+                        </div>
+                        <div class="about-stat-pill">
+                            <span class="stat-num">4.9★</span>
+                            <span class="stat-lbl">Guest Acclaim</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- VIEW ALL ABOUT LINK -->
+                    <div class="section-action-wrap">
+                        <a href="{% url 'about' %}" class="btn-solid-gold">
+                            <span>DISCOVER OUR FULL STORY & TEAM</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Visual Feature Card -->
+                <div class="about-visual-col">
+                    <div class="about-media-card">
+                        <img src="{% static 'about/media/chef_story.jpg' %}" alt="Executive Chef Arthur Pendelton" loading="lazy">
+                        <div class="media-card-overlay"></div>
+                        <div class="about-floating-badge">
+                            <span class="badge-num">1884</span>
+                            <span class="badge-txt">HISTORIC KING STREET SANCTUARY</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         PREVIEW 2: SEASONAL GASTRONOMY & MENU
+         ========================================================================== -->
+    <section class="home-section home-menu-preview" id="homeMenuSection">
+        <div class="home-container">
+            <div class="section-center-header">
+                <span class="section-kicker">SEASONAL GASTRONOMY</span>
+                <h2 class="section-heading">Signature Dishes & Cocktails</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    A preview of our daily menu crafted with dry-aged Himalayan salt beef, wild-caught seafood, and heirloom produce.
+                </p>
+            </div>
+
+            <!-- Dishes Grid -->
+            <div class="home-dishes-grid">
+                {% for dish in featured_dishes %}
+                <div class="home-dish-card">
+                    <div class="dish-card-media">
+                        <img src="{{ dish.get_image_url }}" alt="{{ dish.name }}" loading="lazy">
+                        {% if dish.badge %}
+                        <span class="dish-badge">{{ dish.badge }}</span>
+                        {% endif %}
+                        <span class="dish-price-tag">{{ dish.formatted_price }}</span>
+                    </div>
+                    <div class="dish-card-content">
+                        <span class="dish-cat-kicker">{{ dish.category.name|upper }}</span>
+                        <h3 class="dish-name">{{ dish.name }}</h3>
+                        <p class="dish-desc">{{ dish.description|truncatewords:14 }}</p>
+                        <div class="dish-features-pill">
+                            <span>✦ {{ dish.feature_1 }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">Seasonal dishes being prepared in the kitchen.</p>
+                {% endfor %}
+            </div>
+
+            <!-- VIEW ALL MENU LINK -->
+            <div class="section-center-action">
+                <a href="{% url 'menu_list' %}" class="btn-solid-gold">
+                    <span>EXPLORE COMPLETE A LA CARTE & TASTING MENU (30+ DISHES)</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         PREVIEW 3: TABLE RESERVATIONS & DINING AREAS
+         ========================================================================== -->
+    <section class="home-section home-reservations-preview" id="homeReservationsSection">
+        <div class="home-container">
+            <div class="section-center-header">
+                <span class="section-kicker">SEATING SANCTUARIES</span>
+                <h2 class="section-heading">Atmospheric Dining Spaces</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    From our grand chandelier dining hall to subterranean candlelit vaults, choose the perfect atmosphere for your repast.
+                </p>
+            </div>
+
+            <div class="home-areas-grid">
+                {% for area in seating_areas %}
+                <div class="home-area-card">
+                    <div class="area-media-box">
+                        <img src="{{ area.get_image_url }}" alt="{{ area.name }}" loading="lazy">
+                        <div class="area-media-overlay"></div>
+                        <span class="area-cap-badge">{{ area.capacity }}</span>
+                    </div>
+                    <div class="area-content-box">
+                        <span class="area-min-spend">{{ area.minimum_spend }}</span>
+                        <h3 class="area-title">{{ area.name }}</h3>
+                        <p class="area-desc">{{ area.description|truncatewords:16 }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">Seating areas available for reservation.</p>
+                {% endfor %}
+            </div>
+
+            <!-- VIEW ALL RESERVATIONS LINK -->
+            <div class="section-center-action">
+                <a href="{% url 'reservations' %}" class="btn-solid-gold">
+                    <span>BOOK YOUR TABLE & VIEW DINING POLICIES</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         PREVIEW 4: PRIVATE DINING & SALONS
+         ========================================================================== -->
+    <section class="home-section home-private-preview" id="homePrivateSection">
+        <div class="home-container">
+            <div class="section-center-header">
+                <span class="section-kicker">EXCLUSIVE CELEBRATIONS</span>
+                <h2 class="section-heading">Private Dining Salons & Grand Buyouts</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Host milestone anniversaries, corporate summits, or intimate suppers with dedicated sommeliers and bespoke feasting menus.
+                </p>
+            </div>
+
+            <div class="home-salons-grid">
+                {% for salon in private_salons %}
+                <div class="home-salon-card">
+                    <div class="salon-media-box">
+                        <img src="{{ salon.get_image_url }}" alt="{{ salon.name }}" loading="lazy">
+                        <div class="salon-media-overlay"></div>
+                        <span class="salon-cap-tag">👥 {{ salon.seated_capacity }}</span>
+                    </div>
+                    <div class="salon-content-box">
+                        <span class="salon-spend-kicker">{{ salon.minimum_spend }}</span>
+                        <h3 class="salon-title">{{ salon.name }}</h3>
+                        <p class="salon-tagline"><em>“{{ salon.tagline }}”</em></p>
+                        <p class="salon-desc">{{ salon.description|truncatewords:16 }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">Private salons available for exclusive bookings.</p>
+                {% endfor %}
+            </div>
+
+            <!-- VIEW ALL PRIVATE DINING LINK -->
+            <div class="section-center-action">
+                <a href="{% url 'private_dining' %}" class="btn-solid-gold">
+                    <span>EXPLORE ALL PRIVATE SALONS & REQUEST PROPOSAL</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         PREVIEW 5: VISUAL ARCHIVES & GALLERY
+         ========================================================================== -->
+    <section class="home-section home-gallery-preview" id="homeGallerySection">
+        <div class="home-container">
+            <div class="section-center-header">
+                <span class="section-kicker">THE VISUAL CHRONICLE</span>
+                <h2 class="section-heading">Photographic Portfolio</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    A visual voyage through our culinary theater, cocktail bar craft, and Victorian banking architecture.
+                </p>
+            </div>
+
+            <div class="home-gallery-grid">
+                {% for item in gallery_preview_items %}
+                <a href="{% url 'gallery' %}" class="home-gallery-item">
+                    <img src="{{ item.get_image_url }}" alt="{{ item.title }}" loading="lazy">
+                    <div class="gallery-hover-overlay">
+                        <span class="gallery-hover-cat">{{ item.category.name|upper }}</span>
+                        <h4 class="gallery-hover-title">{{ item.title }}</h4>
+                        <span class="gallery-view-btn">VIEW IN GALLERY ↗</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="text-center text-muted">Photographic archives being prepared.</p>
+                {% endfor %}
+            </div>
+
+            <!-- VIEW ALL GALLERY LINK -->
+            <div class="section-center-action">
+                <a href="{% url 'gallery' %}" class="btn-solid-gold">
+                    <span>VIEW FULL GALLERY & INTERACTIVE LIGHTBOX</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================================================
+         PREVIEW 6: VISIT US & CONCIERGE LIAISON
+         ========================================================================== -->
+    <section class="home-section home-contact-preview" id="homeContactSection">
+        <div class="home-container">
+            <div class="contact-preview-grid">
+                <!-- Left: Information & Liaison Details -->
+                <div class="contact-info-col">
+                    <span class="section-kicker">WELCOME TO MANCHESTER</span>
+                    <h2 class="section-heading">Plan Your Visit to King Street</h2>
+                    <div class="gold-flourish-divider align-left">
+                        <span class="flourish-line"></span>
+                        <span class="flourish-icon">♦</span>
+                        <span class="flourish-line"></span>
+                    </div>
+
+                    <div class="contact-details-list">
+                        <div class="contact-detail-row">
+                            <span class="detail-icon">📍</span>
+                            <div>
+                                <span class="detail-lbl">RESTAURANT LOCATION</span>
+                                <strong class="detail-val">56 King Street, Manchester, M2 4WU</strong>
+                            </div>
+                        </div>
+
+                        <div class="contact-detail-row">
+                            <span class="detail-icon">📞</span>
+                            <div>
+                                <span class="detail-lbl">DIRECT TELEPHONE</span>
+                                <a href="tel:01618390640" class="detail-val link-gold">0161 839 0640</a>
+                            </div>
+                        </div>
+
+                        <div class="contact-detail-row">
+                            <span class="detail-icon">✉️</span>
+                            <div>
+                                <span class="detail-lbl">ELECTRONIC POST</span>
+                                <a href="mailto:reservations@chesterfield-restaurant.co.uk" class="detail-val link-gold">reservations@chesterfield-restaurant.co.uk</a>
+                            </div>
+                        </div>
+
+                        <div class="contact-detail-row">
+                            <span class="detail-icon">⏰</span>
+                            <div>
+                                <span class="detail-lbl">HOURS OF SERVICE</span>
+                                <span class="detail-val">Mon–Thu: 12pm–10pm • Fri–Sat: 12pm–11:30pm • Sun: 12pm–9:30pm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW ALL CONTACT LINK -->
+                    <div class="section-action-wrap">
+                        <a href="{% url 'contact_view' %}" class="btn-solid-gold">
+                            <span>CONTACT OUR CONCIERGE & VIEW FULL GUIDE</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right: Google Maps Interactive Preview -->
+                <div class="contact-map-col">
+                    <div class="map-card-wrapper">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2374.3168676251547!2d-2.2476561233061694!3d53.48128507232863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487bb1c20141bb0b%3A0xe54d6fa4d033a0b1!2sKing%20St%2C%20Manchester%2C%20UK!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s" 
+                            width="100%" 
+                            height="380" 
+                            style="border:0;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade"
+                            title="The Chesterfield Location Map">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock content %}
