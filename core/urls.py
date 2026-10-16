@@ -7,6 +7,7 @@ from menu import views as menu_views
 from about import views as about_views
 from contact import views as contact_views
 from reservations import views as reservation_views
+from private_dining import views as private_dining_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -23,6 +24,9 @@ urlpatterns = [
     path('reservations/', include('reservations.urls')),
     path('reservations/', reservation_views.reservations_view, name='reservations_view'),
     path('reservations/', reservation_views.reservations_view, name='reservations'),
+    path('private_dining/', include('private_dining.urls')),
+    path('private_dining/', private_dining_views.private_dining_view, name='private_dining_view'),
+    path('private_dining/', private_dining_views.private_dining_view, name='private_dining'),
     path('', views.Base, name='base'),
 ]
 

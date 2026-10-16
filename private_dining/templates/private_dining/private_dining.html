@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'private_dining/css/private_dining.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="private-dining-page-wrapper">
+    <!-- 1. Hero Banner Section -->
+    <section class="pd-hero-section" id="privateHero">
+        <div class="pd-hero-bg" style="background-image: url('{% static 'private_dining/media/private_hero.jpg' %}');">
+            <div class="pd-hero-overlay"></div>
+        </div>
+        <div class="pd-hero-content">
+            <nav class="pd-breadcrumb" aria-label="Breadcrumb">
+                <a href="/">HOME</a>
+                <span class="crumb-separator">/</span>
+                <span class="crumb-current">PRIVATE DINING & SALONS</span>
+            </nav>
+            <div class="pd-hero-kicker">
+                <span class="gold-diamond">✦</span>
+                <span class="kicker-text">EXCLUSIVE REPASTS & GRAND SALONS</span>
+                <span class="gold-diamond">✦</span>
+            </div>
+            <h1 class="pd-hero-title">
+                Bespoke Private Banquets & <br>
+                <span class="highlight-script">Exclusive Hire</span>
+            </h1>
+            <p class="pd-hero-subtitle">
+                From candlelit subterranean vault suppers to full-scale Victorian hall buyouts, we curate unforgettable celebrations with absolute discretion and culinary theater in the heart of Manchester.
+            </p>
+            <div class="hero-actions-wrap">
+                <a href="#inquiryConsole" class="btn-solid-gold">
+                    <span>REQUEST BESPOKE PROPOSAL</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+                <a href="#privateSalons" class="btn-outline-gold">
+                    EXPLORE PRIVATE SALONS
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Private Salons Showcase Section -->
+    <section class="pd-salons-section" id="privateSalons">
+        <div class="pd-container">
+            <div class="section-center-header">
+                <span class="section-kicker">DISTINCT SANCTUARIES</span>
+                <h2 class="section-heading">Our Private Dining Spaces</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Whether hosting an intimate high-level corporate dinner, a milestone anniversary banquet, or a private masterclass, each salon offers complete seclusion and world-class hospitality.
+                </p>
+            </div>
+
+            <div class="salons-showcase-grid">
+                {% for salon in salons %}
+                <div class="salon-feature-card">
+                    <div class="salon-media-box">
+                        <img src="{{ salon.get_image_url }}" alt="{{ salon.name }}" loading="lazy">
+                        <div class="salon-media-overlay"></div>
+                        <div class="salon-capacity-pills">
+                            <span class="cap-pill">👥 {{ salon.seated_capacity }}</span>
+                            <span class="cap-pill">🥂 {{ salon.standing_capacity }}</span>
+                        </div>
+                    </div>
+                    <div class="salon-content-box">
+                        <span class="salon-kicker-tag">{{ salon.minimum_spend }}</span>
+                        <h3 class="salon-title">{{ salon.name }}</h3>
+                        <p class="salon-tagline"><em>“{{ salon.tagline }}”</em></p>
+                        <p class="salon-description">{{ salon.description }}</p>
+                        
+                        <div class="salon-amenities-row">
+                            <span class="amenity-item">✦ {{ salon.key_features }}</span>
+                        </div>
+
+                        <div class="salon-card-action">
+                            <button type="button" class="btn-solid-gold w-100 select-salon-trigger" data-salon-id="{{ salon.id }}" data-salon-name="{{ salon.name }}">
+                                <span>INQUIRE FOR THIS SPACE</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">No salons available at this moment.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Curated Feasting Menus Section -->
+    <section class="pd-menus-section" id="privateMenus">
+        <div class="pd-container">
+            <div class="section-center-header">
+                <span class="section-kicker">GASTRONOMIC ITINERARIES</span>
+                <h2 class="section-heading">Private Feasting & Tasting Menus</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Curated by Executive Chef Arthur Pendelton, our banqueting menus showcase the finest seasonal ingredients sourced directly from small-scale British artisanal farms.
+                </p>
+            </div>
+
+            <div class="menus-showcase-grid">
+                {% for menu in menus %}
+                <div class="menu-package-card">
+                    <div class="menu-badge">{{ menu.badge }}</div>
+                    <span class="menu-sub">{{ menu.subtitle }}</span>
+                    <h3 class="menu-title">{{ menu.name }}</h3>
+                    <div class="menu-price-row">
+                        <span class="menu-price">{{ menu.price_per_person }}</span>
+                        <span class="menu-pairing">{{ menu.wine_pairing_price }}</span>
+                    </div>
+                    <p class="menu-desc">{{ menu.description }}</p>
+                    <div class="menu-divider"></div>
+                    
+                    <div class="menu-courses-list">
+                        {% if menu.course_1 %}
+                        <div class="course-item">
+                            <span class="course-num">I</span>
+                            <span class="course-text">{{ menu.course_1 }}</span>
+                        </div>
+                        {% endif %}
+                        {% if menu.course_2 %}
+                        <div class="course-item">
+                            <span class="course-num">II</span>
+                            <span class="course-text">{{ menu.course_2 }}</span>
+                        </div>
+                        {% endif %}
+                        {% if menu.course_3 %}
+                        <div class="course-item">
+                            <span class="course-num">III</span>
+                            <span class="course-text">{{ menu.course_3 }}</span>
+                        </div>
+                        {% endif %}
+                        {% if menu.course_4 %}
+                        <div class="course-item">
+                            <span class="course-num">IV</span>
+                            <span class="course-text">{{ menu.course_4 }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <a href="#inquiryConsole" class="menu-inquire-link">SELECT THIS MENU IN PROPOSAL ↓</a>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">Bespoke menus crafted upon request.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. VIP Amenities & Services Section -->
+    <section class="pd-services-section" id="privateServices">
+        <div class="pd-container">
+            <div class="section-center-header">
+                <span class="section-kicker">WHITE-GLOVE CONCIERGE</span>
+                <h2 class="section-heading">Bespoke Inclusions & Event Artistry</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Every private gathering at The Chesterfield is orchestrated by a dedicated event director, ensuring peerless execution from first toast to final digestif.
+                </p>
+            </div>
+
+            <div class="services-cards-grid">
+                {% for service in services %}
+                <div class="service-feature-card">
+                    <div class="service-icon-box">
+                        <span class="service-icon-glyph">{{ service.icon_symbol }}</span>
+                    </div>
+                    <h3 class="service-title">{{ service.title }}</h3>
+                    <p class="service-desc">{{ service.description }}</p>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">Full VIP amenities available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Interactive Event Inquiry Console Section -->
+    <section class="pd-inquiry-section" id="inquiryConsole">
+        <div class="pd-container">
+            <div class="section-center-header">
+                <span class="section-kicker">COMMENCE YOUR ARRANGEMENTS</span>
+                <h2 class="section-heading">Request a Tailored Event Proposal</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Share your vision with our private events director. We shall prepare a comprehensive proposal with bespoke menus, wine pairings, and floorplans within 12 hours.
+                </p>
+            </div>
+
+            <div class="inquiry-layout-grid">
+                <!-- Left: Form -->
+                <div class="inquiry-form-card">
+                    <!-- Django Messages & AJAX Alerts -->
+                    {% if messages %}
+                    <div class="django-messages-wrap">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <span class="alert-icon">✓</span>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div id="inquiryAjaxAlert" class="ajax-alert" style="display: none;"></div>
+
+                    <form action="{% url 'private_dining:private_dining_view' %}" method="POST" id="privateInquiryForm" class="inquiry-form" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="ajax" value="true">
+
+                        <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label for="inquiryName" class="field-label">Full Name <span class="req">*</span></label>
+                                <input type="text" id="inquiryName" name="full_name" class="form-control" placeholder="Lord / Lady / Mr / Ms First & Last Name" required>
+                                <span class="field-error" id="nameError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inquiryEmail" class="field-label">Email Address <span class="req">*</span></label>
+                                <input type="email" id="inquiryEmail" name="email" class="form-control" placeholder="e.g. yourname@domain.com" required>
+                                <span class="field-error" id="emailError"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label for="inquiryPhone" class="field-label">Telephone Number <span class="req">*</span></label>
+                                <input type="tel" id="inquiryPhone" name="phone" class="form-control" placeholder="e.g. +44 161 839 0640 or mobile" required>
+                                <span class="field-error" id="phoneError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="companyName" class="field-label">Company / Organization (Optional)</label>
+                                <input type="text" id="companyName" name="company_name" class="form-control" placeholder="e.g. Manchester Financial Group Ltd">
+                            </div>
+                        </div>
+
+                        <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label for="eventType" class="field-label">Event Type</label>
+                                <div class="select-wrapper">
+                                    <select id="eventType" name="event_type" class="form-control form-select">
+                                        <option value="private_dinner">Private Celebration Dinner / Supper Club</option>
+                                        <option value="corporate">Corporate Banquet & Executive Entertaining</option>
+                                        <option value="anniversary">Milestone Anniversary or Birthday Gathering</option>
+                                        <option value="wedding">Intimate Wedding Banquet or Rehearsal Dinner</option>
+                                        <option value="tasting">Sommelier Cellar Masterclass & Tasting</option>
+                                        <option value="buyout">Full Restaurant Takeover (Exclusive Hire)</option>
+                                    </select>
+                                    <span class="select-chevron">▼</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="preferredSalon" class="field-label">Preferred Dining Salon</label>
+                                <div class="select-wrapper">
+                                    <select id="preferredSalon" name="preferred_salon" class="form-control form-select">
+                                        {% for salon in salons %}
+                                        <option value="{{ salon.id }}">{{ salon.name }} ({{ salon.seated_capacity }})</option>
+                                        {% empty %}
+                                        <option value="">Executive Private Salon</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-chevron">▼</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row form-row-3">
+                            <div class="form-group">
+                                <label for="preferredDate" class="field-label">Preferred Date <span class="req">*</span></label>
+                                <input type="date" id="preferredDate" name="preferred_date" class="form-control" min="{{ today_str }}" max="{{ max_date_str }}" value="{{ today_str }}" required>
+                                <span class="field-error" id="dateError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="preferredTimeSlot" class="field-label">Session Timing</label>
+                                <div class="select-wrapper">
+                                    <select id="preferredTimeSlot" name="preferred_time_slot" class="form-control form-select">
+                                        <option value="dinner">Evening Dinner (6:00 PM – 11:30 PM)</option>
+                                        <option value="lunch">Lunch Service (12:00 PM – 4:00 PM)</option>
+                                        <option value="full_day">All-Day Exclusive Access</option>
+                                    </select>
+                                    <span class="select-chevron">▼</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="guestCount" class="field-label">Estimated Guests <span class="req">*</span></label>
+                                <input type="number" id="guestCount" name="guest_count" class="form-control" min="4" max="160" value="12" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estimatedBudget" class="field-label">Estimated Budget Range (Optional)</label>
+                            <input type="text" id="estimatedBudget" name="estimated_budget" class="form-control" placeholder="e.g. £2,000 – £5,000 or £100 per guest">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="specialRequirements" class="field-label">Special Requirements & Culinary Vision</label>
+                            <textarea id="specialRequirements" name="special_requirements" class="form-control form-textarea" rows="4" placeholder="Dietary adaptations, champagne reception preferences, audio-visual presentation needs, bespoke florist arrangements..."></textarea>
+                        </div>
+
+                        <div class="form-submit-row">
+                            <button type="submit" class="btn-solid-gold submit-btn" id="inquirySubmitBtn">
+                                <span class="btn-text">TRANSMIT PROPOSAL REQUEST</span>
+                                <span class="btn-spinner" style="display: none;"></span>
+                                <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </button>
+                            <span class="guarantee-note">
+                                🔒 Dedicated Event Concierge • Confidentiality Assured • Rapid Proposal within 12 Hours
+                            </span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Direct Concierge Liaison Card -->
+                <div class="inquiry-liaison-column">
+                    <div class="liaison-sticky-card">
+                        <div class="liaison-header">
+                            <span class="card-kicker">PERSONAL DIRECT LIAISON</span>
+                            <h3 class="card-heading">Private Events Directorate</h3>
+                            <div class="gold-line-subtle"></div>
+                        </div>
+
+                        <div class="liaison-contact-block">
+                            <div class="liaison-row">
+                                <span class="liaison-icon">📞</span>
+                                <div>
+                                    <span class="liaison-label">Direct Events Telephone</span>
+                                    <a href="tel:01618390642" class="liaison-val">0161 839 0642</a>
+                                </div>
+                            </div>
+
+                            <div class="liaison-row">
+                                <span class="liaison-icon">✉️</span>
+                                <div>
+                                    <span class="liaison-label">Dedicated Electronic Post</span>
+                                    <a href="mailto:events@chesterfield-restaurant.co.uk" class="liaison-val">events@chesterfield-restaurant.co.uk</a>
+                                </div>
+                            </div>
+
+                            <div class="liaison-row">
+                                <span class="liaison-icon">📍</span>
+                                <div>
+                                    <span class="liaison-label">Venue Address</span>
+                                    <span class="liaison-text">56 King Street, Manchester, M2 4WU</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="event-guarantees-list">
+                            <div class="guarantee-item">
+                                <span class="g-icon">✓</span>
+                                <span>Complimentary champagne tasting for event lead</span>
+                            </div>
+                            <div class="guarantee-item">
+                                <span class="g-icon">✓</span>
+                                <span>Bespoke sommelier cellar pairings</span>
+                            </div>
+                            <div class="guarantee-item">
+                                <span class="g-icon">✓</span>
+                                <span>Gold-foiled monogrammed menus provided</span>
+                            </div>
+                            <div class="guarantee-item">
+                                <span class="g-icon">✓</span>
+                                <span>Private valet parking drop-off available</span>
+                            </div>
+                        </div>
+
+                        <div class="liaison-brochure-action">
+                            <a href="tel:01618390642" class="btn-outline-gold w-100 text-center">
+                                <span>SPEAK WITH EVENTS DIRECTOR</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Confirmation Modal -->
+    <div class="pd-modal-backdrop" id="inquiryConfirmModal" style="display: none;">
+        <div class="pd-modal-dialog">
+            <div class="pd-modal-content">
+                <button type="button" class="pd-modal-close" id="closeInquiryModalBtn" aria-label="Close dialog">&times;</button>
+                
+                <div class="confirm-badge-wrap">
+                    <div class="confirm-check-circle">✓</div>
+                </div>
+
+                <span class="confirm-supertitle">EVENT INQUIRY REGISTERED</span>
+                <h3 class="confirm-title">Your Proposal Request is Being Curated</h3>
+                <p class="confirm-subtitle">
+                    Thank you. Our Private Events Director, Marcus Sterling, has received your specifications and will transmit a detailed culinary proposal within 12 hours.
+                </p>
+
+                <!-- Reference Box -->
+                <div class="booking-ref-box">
+                    <span class="ref-label">INQUIRY DOSSIER REFERENCE</span>
+                    <span class="ref-code" id="modalInquiryRef">PD-A84920</span>
+                </div>
+
+                <!-- Itinerary Grid -->
+                <div class="modal-itinerary-grid">
+                    <div class="modal-itinerary-item">
+                        <span class="itinerary-label">Host / Lead</span>
+                        <strong class="itinerary-val" id="modalHostName">Lord Alistair Vance</strong>
+                    </div>
+
+                    <div class="modal-itinerary-item">
+                        <span class="itinerary-label">Requested Date</span>
+                        <strong class="itinerary-val" id="modalEventDate">Friday, 16 October 2026</strong>
+                    </div>
+
+                    <div class="modal-itinerary-item">
+                        <span class="itinerary-label">Guest Count</span>
+                        <strong class="itinerary-val" id="modalGuestCount">18 Guests</strong>
+                    </div>
+
+                    <div class="modal-itinerary-item">
+                        <span class="itinerary-label">Selected Space</span>
+                        <strong class="itinerary-val" id="modalSalonName">The Bullion Vault</strong>
+                    </div>
+                </div>
+
+                <div class="modal-actions-group">
+                    <button type="button" class="btn-solid-gold w-100" id="modalInquiryDismissBtn">
+                        EXCELLENT, RETURN TO PAGE
+                    </button>
+                    <a href="{% url 'menu_list' %}" class="btn-outline-gold w-100 text-center">
+                        EXPLORE OUR SEASONAL DISHES
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'private_dining/js/private_dining.js' %}"></script>
+{% endblock extra_js %}
