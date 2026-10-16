@@ -1,0 +1,574 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'reservations/css/reservations.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="reservations-page-wrapper">
+    <!-- 1. Hero Banner Section -->
+    <section class="res-hero-section" id="reservationHero">
+        <div class="res-hero-bg" style="background-image: url('{% static 'reservations/media/reservation_hero.jpg' %}');">
+            <div class="res-hero-overlay"></div>
+        </div>
+        <div class="res-hero-content">
+            <nav class="res-breadcrumb" aria-label="Breadcrumb">
+                <a href="/">HOME</a>
+                <span class="crumb-separator">/</span>
+                <span class="crumb-current">TABLE RESERVATIONS</span>
+            </nav>
+            <div class="res-hero-kicker">
+                <span class="gold-diamond">✦</span>
+                <span class="kicker-text">AN IMMERSIVE CULINARY ESCAPE</span>
+                <span class="gold-diamond">✦</span>
+            </div>
+            <h1 class="res-hero-title">
+                Reserve Your Table on <br>
+                <span class="highlight-script">King Street</span>
+            </h1>
+            <p class="res-hero-subtitle">
+                Join us for seasonal British dining, theatrical chef counter tastings, or an intimate private cellar banquet in the historic heart of Manchester.
+            </p>
+            <div class="hero-actions-wrap">
+                <a href="#bookingConsole" class="btn-solid-gold">
+                    <span>BOOK YOUR TABLE NOW</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+                <a href="#seatingShowcase" class="btn-outline-gold">
+                    EXPLORE DINING SALONS
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Interactive Booking Console Section -->
+    <section class="booking-console-section" id="bookingConsole">
+        <div class="res-container">
+            <div class="section-center-header">
+                <span class="section-kicker">EFFORTLESS RESERVATIONS</span>
+                <h2 class="section-heading">Curate Your Dining Experience</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Reservations are confirmed immediately. We welcome online bookings up to 60 days in advance.
+                </p>
+            </div>
+
+            <!-- Booking Grid (Form + Live Summary) -->
+            <div class="booking-layout-grid">
+                
+                <!-- Left Column: Step-by-Step Interactive Form -->
+                <div class="booking-form-card">
+                    
+                    <!-- Django Alerts & AJAX Message -->
+                    {% if messages %}
+                    <div class="django-messages-wrap">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <span class="alert-icon">✓</span>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div id="bookingAjaxAlert" class="ajax-alert" style="display: none;"></div>
+
+                    <form action="{% url 'reservations:reservations_view' %}" method="POST" id="mainReservationForm" class="res-form" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="ajax" value="true">
+                        <input type="hidden" name="reservation_time" id="hiddenSelectedTime" value="19:30">
+
+                        <!-- STEP 1: Guests & Date -->
+                        <div class="form-step-block">
+                            <div class="step-badge">
+                                <span class="step-num">01</span>
+                                <span class="step-title">GUESTS & CALENDAR DATE</span>
+                            </div>
+
+                            <!-- Guest Counter Selector -->
+                            <div class="guest-selector-wrap">
+                                <label class="field-label">Number of Guests <span class="req">*</span></label>
+                                <div class="guest-pills-row" id="guestPills">
+                                    <button type="button" class="guest-pill" data-guests="1">1</button>
+                                    <button type="button" class="guest-pill active" data-guests="2">2</button>
+                                    <button type="button" class="guest-pill" data-guests="3">3</button>
+                                    <button type="button" class="guest-pill" data-guests="4">4</button>
+                                    <button type="button" class="guest-pill" data-guests="5">5</button>
+                                    <button type="button" class="guest-pill" data-guests="6">6</button>
+                                    <button type="button" class="guest-pill" data-guests="7">7</button>
+                                    <button type="button" class="guest-pill" data-guests="8">8</button>
+                                    <button type="button" class="guest-pill" data-guests="9">9+</button>
+                                </div>
+                                <input type="hidden" name="guests_count" id="guestsCountInput" value="2">
+                                <p class="field-hint" id="largePartyHint" style="display: none;">
+                                    ✦ For grand gatherings of 9 or more, our dedicated event concierge will assist with bespoke arrangements.
+                                </p>
+                            </div>
+
+                            <!-- Date Picker -->
+                            <div class="date-picker-wrap">
+                                <label for="reservationDate" class="field-label">Preferred Date <span class="req">*</span></label>
+                                <div class="input-with-icon">
+                                    <input type="date" id="reservationDate" name="reservation_date" class="form-control" min="{{ today_str }}" max="{{ max_date_str }}" value="{{ today_str }}" required>
+                                    <span class="input-calendar-icon">📅</span>
+                                </div>
+                                <span class="field-error" id="dateError"></span>
+                            </div>
+                        </div>
+
+                        <!-- STEP 2: Seating Area Selection -->
+                        <div class="form-step-block">
+                            <div class="step-badge">
+                                <span class="step-num">02</span>
+                                <span class="step-title">CHOOSE YOUR DINING SALON</span>
+                            </div>
+
+                            <div class="seating-area-cards-grid">
+                                {% for area in seating_areas %}
+                                <label class="area-selection-card {% if forloop.first %}selected{% endif %}" data-area-id="{{ area.id }}" data-area-name="{{ area.name }}" data-area-img="{{ area.get_image_url }}">
+                                    <input type="radio" name="seating_area" value="{{ area.id }}" {% if forloop.first %}checked{% endif %} class="area-radio-hidden">
+                                    <div class="area-card-thumb">
+                                        <img src="{{ area.get_image_url }}" alt="{{ area.name }}" loading="lazy">
+                                        <span class="area-capacity-pill">{{ area.capacity }}</span>
+                                    </div>
+                                    <div class="area-card-body">
+                                        <h4 class="area-card-title">{{ area.name }}</h4>
+                                        <p class="area-card-tag">{{ area.tagline }}</p>
+                                        <span class="area-spend-badge">{{ area.minimum_spend }}</span>
+                                    </div>
+                                </label>
+                                {% empty %}
+                                <p class="text-muted">Main Dining Room available.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- STEP 3: Dining Experience & Time Slots -->
+                        <div class="form-step-block">
+                            <div class="step-badge">
+                                <span class="step-num">03</span>
+                                <span class="step-title">EXPERIENCE & SEATING TIME</span>
+                            </div>
+
+                            <!-- Experience Selector -->
+                            <div class="form-group mb-24">
+                                <label for="diningExperienceSelect" class="field-label">Dining Experience</label>
+                                <div class="select-wrapper">
+                                    <select id="diningExperienceSelect" name="dining_experience" class="form-control form-select">
+                                        {% for exp in experiences %}
+                                        <option value="{{ exp.name }}" {% if forloop.counter == 2 %}selected{% endif %}>
+                                            {{ exp.name }} — {{ exp.price_hint }}
+                                        </option>
+                                        {% empty %}
+                                        <option value="A La Carte Experience">A La Carte Experience</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-chevron">▼</span>
+                                </div>
+                            </div>
+
+                            <!-- Time Slots Session Tabs -->
+                            <div class="time-session-tabs">
+                                <button type="button" class="session-tab-btn" data-session="lunch">LUNCH SERVICE</button>
+                                <button type="button" class="session-tab-btn active" data-session="dinner">EVENING SERVICE</button>
+                            </div>
+
+                            <!-- Lunch Slots -->
+                            <div class="time-slots-grid" id="lunchSlots" style="display: none;">
+                                {% for slot in lunch_slots %}
+                                <button type="button" class="time-slot-pill" data-time="{{ slot }}">{{ slot }}</button>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Dinner Slots -->
+                            <div class="time-slots-grid" id="dinnerSlots">
+                                {% for slot in dinner_slots %}
+                                <button type="button" class="time-slot-pill {% if slot == '19:30' %}active{% endif %}" data-time="{{ slot }}">{{ slot }}</button>
+                                {% endfor %}
+                            </div>
+                            <span class="field-error" id="timeError"></span>
+                        </div>
+
+                        <!-- STEP 4: Guest Contact & Notes -->
+                        <div class="form-step-block">
+                            <div class="step-badge">
+                                <span class="step-num">04</span>
+                                <span class="step-title">GUEST CREDENTIALS & PREFERENCES</span>
+                            </div>
+
+                            <div class="form-row form-row-2">
+                                <div class="form-group">
+                                    <label for="guestName" class="field-label">Full Name <span class="req">*</span></label>
+                                    <input type="text" id="guestName" name="guest_name" class="form-control" placeholder="e.g. Lord Alistair Vance" required>
+                                    <span class="field-error" id="nameError"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="guestEmail" class="field-label">Email Address <span class="req">*</span></label>
+                                    <input type="email" id="guestEmail" name="guest_email" class="form-control" placeholder="e.g. alistair@vance-holdings.co.uk" required>
+                                    <span class="field-error" id="emailError"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-row form-row-2">
+                                <div class="form-group">
+                                    <label for="guestPhone" class="field-label">Telephone Number <span class="req">*</span></label>
+                                    <input type="tel" id="guestPhone" name="guest_phone" class="form-control" placeholder="e.g. 0161 839 0640 or mobile" required>
+                                    <span class="field-error" id="phoneError"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="occasionSelect" class="field-label">Special Occasion</label>
+                                    <div class="select-wrapper">
+                                        <select id="occasionSelect" name="occasion" class="form-control form-select">
+                                            <option value="casual">Casual Dining / Friendly Catch-up</option>
+                                            <option value="date_night">Romantic Date Night</option>
+                                            <option value="anniversary">Anniversary Celebration</option>
+                                            <option value="birthday">Birthday Gathering</option>
+                                            <option value="business">Business Dinner / Corporate Hospitality</option>
+                                            <option value="special">Landmark Celebration</option>
+                                        </select>
+                                        <span class="select-chevron">▼</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="dietaryRequests" class="field-label">Dietary Adaptations & Allergies (Optional)</label>
+                                <input type="text" id="dietaryRequests" name="dietary_requests" class="form-control" placeholder="e.g. Celiac / Gluten-Free (1 guest), Nut allergy, Pescatarian">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="specialRequests" class="field-label">Special Requests (Optional)</label>
+                                <textarea id="specialRequests" name="special_requests" class="form-control form-textarea" rows="3" placeholder="Window booth preference, birthday dessert candle, sommelier cellar pairing flight..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Submit Action -->
+                        <div class="form-submit-row">
+                            <button type="submit" class="btn-solid-gold submit-btn" id="reservationSubmitBtn">
+                                <span class="btn-text">CONFIRM TABLE RESERVATION</span>
+                                <span class="btn-spinner" style="display: none;"></span>
+                                <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </button>
+                            <span class="guarantee-note">
+                                🔒 Instant Confirmation • No booking fee • Free cancellation up to 24h prior
+                            </span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Live Booking Summary Card -->
+                <div class="booking-summary-column">
+                    <div class="summary-sticky-card" id="summaryStickyCard">
+                        <div class="summary-card-header">
+                            <span class="summary-super">LIVE ITINERARY</span>
+                            <h3 class="summary-heading">Your Reservation</h3>
+                            <div class="gold-line-subtle"></div>
+                        </div>
+
+                        <!-- Area Preview Image -->
+                        <div class="summary-area-preview">
+                            <img src="{% static 'reservations/media/area_grand_hall.jpg' %}" id="summaryAreaImg" alt="Seating Area Preview" loading="lazy">
+                            <div class="summary-area-overlay"></div>
+                            <span class="summary-area-name" id="summaryAreaName">The Grand Victorian Hall</span>
+                        </div>
+
+                        <!-- Summary Rows -->
+                        <div class="summary-details-list">
+                            <div class="summary-row">
+                                <span class="summary-label">📅 Date</span>
+                                <strong class="summary-val" id="summaryDateVal">Today</strong>
+                            </div>
+
+                            <div class="summary-row">
+                                <span class="summary-label">⏰ Time</span>
+                                <strong class="summary-val" id="summaryTimeVal">19:30</strong>
+                            </div>
+
+                            <div class="summary-row">
+                                <span class="summary-label">👥 Party Size</span>
+                                <strong class="summary-val" id="summaryGuestsVal">2 Guests</strong>
+                            </div>
+
+                            <div class="summary-row">
+                                <span class="summary-label">🍽 Experience</span>
+                                <strong class="summary-val" id="summaryExperienceVal">Evening Tasting</strong>
+                            </div>
+
+                            <div class="summary-row">
+                                <span class="summary-label">🥂 Occasion</span>
+                                <strong class="summary-val" id="summaryOccasionVal">Casual Dining</strong>
+                            </div>
+                        </div>
+
+                        <!-- Policy Snippets -->
+                        <div class="summary-policies-box">
+                            <div class="policy-mini-item">
+                                <span class="mini-icon">⏱</span>
+                                <span>Tables held for 15 minutes</span>
+                            </div>
+                            <div class="policy-mini-item">
+                                <span class="mini-icon">👔</span>
+                                <span>Smart Casual dress code</span>
+                            </div>
+                            <div class="policy-mini-item">
+                                <span class="mini-icon">💳</span>
+                                <span>No upfront deposit required</span>
+                            </div>
+                        </div>
+
+                        <!-- Direct Concierge Hotline -->
+                        <div class="summary-concierge-hotline">
+                            <span class="hotline-icon">📞</span>
+                            <div>
+                                <span class="hotline-label">Direct Concierge Inquiries</span>
+                                <a href="tel:01618390640" class="hotline-phone">0161 839 0640</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Seating Salons Showcase Section -->
+    <section class="seating-showcase-section" id="seatingShowcase">
+        <div class="res-container">
+            <div class="section-center-header">
+                <span class="section-kicker">ATMOSPHERIC AMBIENCE</span>
+                <h2 class="section-heading">Explore Our Distinct Dining Salons</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    Each area at The Chesterfield has its own distinct energy, historical charm, and gastronomic narrative.
+                </p>
+            </div>
+
+            <div class="salons-grid">
+                {% for area in seating_areas %}
+                <div class="salon-card">
+                    <div class="salon-image-wrap">
+                        <img src="{{ area.get_image_url }}" alt="{{ area.name }}" loading="lazy">
+                        <div class="salon-overlay"></div>
+                        <span class="salon-capacity-badge">{{ area.capacity }}</span>
+                    </div>
+                    <div class="salon-body">
+                        <span class="salon-kicker">{{ area.minimum_spend }}</span>
+                        <h3 class="salon-title">{{ area.name }}</h3>
+                        <p class="salon-tagline"><em>“{{ area.tagline }}”</em></p>
+                        <p class="salon-desc">{{ area.description }}</p>
+                        <button type="button" class="btn-outline-gold select-salon-btn" data-area-id="{{ area.id }}">
+                            SELECT THIS SALON
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">No salons available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Dining Experiences Showcase Section -->
+    <section class="experiences-showcase-section" id="experiencesShowcase">
+        <div class="res-container">
+            <div class="section-center-header">
+                <span class="section-kicker">CURATED REPASTS</span>
+                <h2 class="section-heading">Signature Dining Experiences</h2>
+                <div class="gold-flourish-divider">
+                    <span class="flourish-line"></span>
+                    <span class="flourish-icon">♦</span>
+                    <span class="flourish-line"></span>
+                </div>
+                <p class="section-subtext">
+                    From leisurely midday repasts to multi-course Michelin tasting menus paired with rare cellar vintages.
+                </p>
+            </div>
+
+            <div class="experiences-grid">
+                {% for exp in experiences %}
+                <div class="experience-card">
+                    <div class="exp-badge">{{ exp.badge }}</div>
+                    <span class="exp-timing">{{ exp.timing }}</span>
+                    <h3 class="exp-title">{{ exp.name }}</h3>
+                    <div class="exp-price">{{ exp.price_hint }}</div>
+                    <div class="exp-divider"></div>
+                    <p class="exp-desc">{{ exp.description }}</p>
+                    <a href="{% url 'menu_list' %}" class="exp-link">VIEW SAMPLE MENU →</a>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted">Experiences available on request.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Reservation Policies & Protocols Section -->
+    <section class="reservation-policy-section" id="reservationPolicy">
+        <div class="res-container">
+            <div class="policy-card">
+                <div class="policy-header">
+                    <span class="card-kicker">GUEST GUIDELINES</span>
+                    <h3 class="policy-card-title">{{ policy.title|default:"The Chesterfield Dining Protocols & Booking Terms" }}</h3>
+                    <div class="gold-line-subtle"></div>
+                </div>
+
+                <div class="policy-grid-content">
+                    <div class="policy-item">
+                        <span class="policy-icon">📅</span>
+                        <div>
+                            <strong>Booking Horizon</strong>
+                            <p>{{ policy.lead_time_info }}</p>
+                        </div>
+                    </div>
+
+                    <div class="policy-item">
+                        <span class="policy-icon">⏳</span>
+                        <div>
+                            <strong>Table Grace Period</strong>
+                            <p>{{ policy.table_holding_time }}</p>
+                        </div>
+                    </div>
+
+                    <div class="policy-item">
+                        <span class="policy-icon">🔄</span>
+                        <div>
+                            <strong>Cancellation & Modifications</strong>
+                            <p>{{ policy.cancellation_policy }}</p>
+                        </div>
+                    </div>
+
+                    <div class="policy-item">
+                        <span class="policy-icon">👔</span>
+                        <div>
+                            <strong>Dress Code</strong>
+                            <p>{{ policy.dress_code }}</p>
+                        </div>
+                    </div>
+
+                    <div class="policy-item">
+                        <span class="policy-icon">🍷</span>
+                        <div>
+                            <strong>Cellar Corkage</strong>
+                            <p>{{ policy.corkage_policy }}</p>
+                        </div>
+                    </div>
+
+                    <div class="policy-item">
+                        <span class="policy-icon">👥</span>
+                        <div>
+                            <strong>Large Parties & Feasting</strong>
+                            <p>{{ policy.large_party_info }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Bottom Call-To-Action Banner -->
+    <section class="res-bottom-cta" id="reservationCta">
+        <div class="res-container">
+            <div class="res-cta-card">
+                <div class="cta-card-flourish"></div>
+                <div class="cta-inner-content">
+                    <span class="cta-supertitle">NEED BESPOKE ASSISTANCE?</span>
+                    <h2 class="cta-title">Prefer to Speak Directly with Our Sommelier or Maître D'?</h2>
+                    <p class="cta-desc">
+                        Our guest services brigade is on hand daily from 10:00 AM to 10:00 PM to assist with dietary requirements, wine pairing recommendations, or exclusive private cellar takeovers.
+                    </p>
+                    <div class="cta-btn-group">
+                        <a href="tel:01618390640" class="btn-solid-gold">
+                            <span>TELEPHONE CONCIERGE: 0161 839 0640</span>
+                        </a>
+                        <a href="{% url 'contact_view' %}" class="btn-outline-gold">
+                            SEND CONCIERGE MESSAGE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Instant Booking Confirmation Modal -->
+    <div class="res-modal-backdrop" id="resConfirmModal" style="display: none;">
+        <div class="res-modal-dialog">
+            <div class="res-modal-content">
+                <button type="button" class="res-modal-close" id="closeConfirmModalBtn" aria-label="Close confirmation dialog">&times;</button>
+                
+                <div class="confirm-badge-wrap">
+                    <div class="confirm-check-circle">✓</div>
+                </div>
+
+                <span class="confirm-supertitle">TABLE RESERVATION CONFIRMED</span>
+                <h3 class="confirm-title">We Look Forward to Welcoming You</h3>
+                <p class="confirm-subtitle">
+                    A confirmation notification has been registered with our maître d'. Please retain your booking reference.
+                </p>
+
+                <!-- Reference Pill -->
+                <div class="booking-ref-box">
+                    <span class="ref-label">BOOKING REFERENCE</span>
+                    <span class="ref-code" id="modalRefCode">TC-84920</span>
+                </div>
+
+                <!-- Itinerary Details Grid -->
+                <div class="modal-itinerary-grid">
+                    <div class="modal-itinerary-item">
+                        <span class="itinerary-label">Guest Name</span>
+                        <strong class="itinerary-val" id="modalGuestName">Lord Alistair Vance</strong>
+                    </div>
+
+                    <div class="modal-itinerary-item">
+                        <span class="itinerary-label">Date</span>
+                        <strong class="itinerary-val" id="modalDate">Friday, 16 October 2026</strong>
+                    </div>
+
+                    <div class="modal-itinerary-item">
+                        <span class="itinerary-label">Seating Time</span>
+                        <strong class="itinerary-val" id="modalTime">19:30</strong>
+                    </div>
+
+                    <div class="modal-itinerary-item">
+                        <span class="itinerary-label">Party Size</span>
+                        <strong class="itinerary-val" id="modalGuests">2 Guests</strong>
+                    </div>
+
+                    <div class="modal-itinerary-item" style="grid-column: span 2;">
+                        <span class="itinerary-label">Dining Salon</span>
+                        <strong class="itinerary-val" id="modalArea">The Grand Victorian Hall</strong>
+                    </div>
+                </div>
+
+                <div class="modal-actions-group">
+                    <button type="button" class="btn-solid-gold w-100" id="modalDismissBtn">
+                        EXCELLENT, RETURN TO PAGE
+                    </button>
+                    <a href="{% url 'menu_list' %}" class="btn-outline-gold w-100 text-center">
+                        EXPLORE OUR SEASONAL MENU
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'reservations/js/reservations.js' %}"></script>
+{% endblock extra_js %}

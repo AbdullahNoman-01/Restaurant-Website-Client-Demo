@@ -6,6 +6,7 @@ from . import views
 from menu import views as menu_views
 from about import views as about_views
 from contact import views as contact_views
+from reservations import views as reservation_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -19,6 +20,9 @@ urlpatterns = [
     path('contact/', include('contact.urls')),
     path('contact/', contact_views.contact_view, name='contact_view'),
     path('contact/', contact_views.contact_view, name='contact'),
+    path('reservations/', include('reservations.urls')),
+    path('reservations/', reservation_views.reservations_view, name='reservations_view'),
+    path('reservations/', reservation_views.reservations_view, name='reservations'),
     path('', views.Base, name='base'),
 ]
 
