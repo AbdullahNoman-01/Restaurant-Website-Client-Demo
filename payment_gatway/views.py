@@ -614,44 +614,54 @@ def stripe_success(request):
         return HttpResponseBadRequest("Missing session identifier.")
 
     try:
+        if stripe:
+            stripe.api_key = settings.STRIPE_SECRET_KEY
         session = stripe.checkout.Session.retrieve(session_id)
-        order_number = session.metadata.get('order_number')
-        access_token_str = session.metadata.get('access_token')
+        # Convert StripeObject to dict for compatibility with stripe-python v16+
+        session_data = session.to_dict() if hasattr(session, 'to_dict') else (session if isinstance(session, dict) else {})
+        metadata = session_data.get('metadata') or {}
+        order_number = metadata.get('order_number') or session_data.get('client_reference_id')
+        access_token_str = metadata.get('access_token')
 
         order = None
-        if order_number:
+        if session_id:
+            order = Order.objects.filter(stripe_session_id=session_id).first()
+        if not order and order_number:
             order = Order.objects.filter(order_number=order_number).first()
         if not order and access_token_str:
             try:
-                order = Order.objects.filter(access_token=uuid.UUID(access_token_str)).first()
+                order = Order.objects.filter(access_token=uuid.UUID(str(access_token_str))).first()
             except (ValueError, TypeError):
                 pass
-        if not order:
-            order = Order.objects.filter(stripe_session_id=session_id).first()
 
         if not order:
             messages.error(request, "Could not locate customer order for this Stripe session.")
             return redirect('payment_gatway:checkout')
 
-        # Idempotent check: only update if not already marked paid
-        if session.payment_status == 'paid':
+        # Idempotent check: update order to paid when checkout completed
+        payment_status = session_data.get('payment_status') or getattr(session, 'payment_status', None)
+        if payment_status == 'paid':
             if order.payment_status != 'paid':
+                payment_intent = session_data.get('payment_intent') or getattr(session, 'payment_intent', None) or ''
                 order.payment_status = 'paid'
                 order.order_status = 'confirmed'
-                order.stripe_payment_intent = str(session.payment_intent or '')
+                order.stripe_payment_intent = str(payment_intent)
                 order.paid_at = timezone.now()
                 order.save(update_fields=['payment_status', 'order_status', 'stripe_payment_intent', 'paid_at'])
 
-                tx_id = session.payment_intent or session_id
+                tx_id = payment_intent or session_id
+                amount_total = session_data.get('amount_total') or getattr(session, 'amount_total', None)
+                amount = Decimal(str(amount_total / 100)) if amount_total else order.grand_total
+                currency = session_data.get('currency') or getattr(session, 'currency', 'USD')
                 Payment.objects.get_or_create(
                     order=order,
                     transaction_id=tx_id,
                     defaults={
                         'provider': 'stripe',
-                        'amount': Decimal(str(session.amount_total / 100)),
-                        'currency': session.currency.upper(),
+                        'amount': amount,
+                        'currency': currency.upper(),
                         'payment_status': 'completed',
-                        'raw_response': json.dumps({'session_id': session.id, 'payment_status': session.payment_status}),
+                        'raw_response': json.dumps({'session_id': session_id, 'payment_status': payment_status}),
                     }
                 )
 
@@ -714,54 +724,62 @@ def stripe_webhook(request):
         except Exception:
             return HttpResponse(status=400)
 
-    event_type = event.get('type') if isinstance(event, dict) else event.type
-    event_data = event.get('data', {}).get('object', {}) if isinstance(event, dict) else event.data.object
+    event_type = event.get('type') if isinstance(event, dict) else getattr(event, 'type', '')
+    event_data = event.get('data', {}).get('object', {}) if isinstance(event, dict) else getattr(getattr(event, 'data', None), 'object', {})
 
     if event_type in ['checkout.session.completed', 'checkout.session.async_payment_succeeded']:
         session = event_data
-        order_number = session.get('metadata', {}).get('order_number') or session.get('client_reference_id')
-        session_id = session.get('id')
-        payment_status = session.get('payment_status')
+        session_data = session.to_dict() if hasattr(session, 'to_dict') else (session if isinstance(session, dict) else {})
+        metadata = session_data.get('metadata') or {}
+        order_number = metadata.get('order_number') or session_data.get('client_reference_id')
+        session_id = session_data.get('id')
+        payment_status = session_data.get('payment_status')
 
         order = None
-        if order_number:
+        if session_id:
+            order = Order.objects.filter(stripe_session_id=session_id).first()
+        if not order and order_number:
             order = Order.objects.filter(order_number=order_number).first()
             if not order:
                 try:
                     order = Order.objects.filter(access_token=uuid.UUID(str(order_number))).first()
                 except Exception:
                     pass
-        if not order and session_id:
-            order = Order.objects.filter(stripe_session_id=session_id).first()
 
         if order and payment_status == 'paid':
             if order.payment_status != 'paid':
                 order.payment_status = 'paid'
                 order.order_status = 'confirmed'
                 order.paid_at = timezone.now()
-                order.stripe_payment_intent = session.get('payment_intent') or ''
+                order.stripe_payment_intent = session_data.get('payment_intent') or ''
                 order.save(update_fields=['payment_status', 'order_status', 'paid_at', 'stripe_payment_intent'])
 
             Payment.objects.get_or_create(
                 order=order,
                 provider='stripe',
-                transaction_id=session.get('payment_intent') or session.get('id', ''),
+                transaction_id=session_data.get('payment_intent') or session_data.get('id', ''),
                 defaults={
-                    'amount': Decimal(str(session.get('amount_total', 0) / 100)),
-                    'currency': session.get('currency', 'USD').upper(),
+                    'amount': Decimal(str(session_data.get('amount_total', 0) / 100)),
+                    'currency': session_data.get('currency', 'USD').upper(),
                     'payment_status': 'completed',
-                    'raw_response': json.dumps(session if isinstance(session, dict) else dict(session)),
+                    'raw_response': json.dumps(session_data),
                 }
             )
 
     elif event_type == 'checkout.session.async_payment_failed':
         session = event_data
-        order_number = session.get('metadata', {}).get('order_number') or session.get('client_reference_id')
-        if order_number:
+        session_data = session.to_dict() if hasattr(session, 'to_dict') else (session if isinstance(session, dict) else {})
+        metadata = session_data.get('metadata') or {}
+        order_number = metadata.get('order_number') or session_data.get('client_reference_id')
+        session_id = session_data.get('id')
+        order = None
+        if session_id:
+            order = Order.objects.filter(stripe_session_id=session_id).first()
+        if not order and order_number:
             order = Order.objects.filter(order_number=order_number).first()
-            if order and order.payment_status != 'paid':
-                order.payment_status = 'failed'
-                order.save(update_fields=['payment_status'])
+        if order and order.payment_status != 'paid':
+            order.payment_status = 'failed'
+            order.save(update_fields=['payment_status'])
 
     return HttpResponse(status=200)
 

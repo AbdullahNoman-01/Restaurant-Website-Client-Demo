@@ -76,7 +76,7 @@
                         </label>
 
                         <!-- Option B: PayPal -->
-                        <label class="payment-method-option" for="payMethodPayPal">
+                        {% comment %} <label class="payment-method-option" for="payMethodPayPal">
                             <div class="method-radio-box">
                                 <input type="radio" id="payMethodPayPal" name="payment_method" value="paypal">
                                 <span class="custom-radio"></span>
@@ -88,7 +88,7 @@
                                 </div>
                                 <p class="method-desc">Fast and protected checkout via your PayPal wallet or PayPal balance (Sandbox Mode).</p>
                             </div>
-                        </label>
+                        </label> {% endcomment %}
 
                         <!-- Option C: Cash on Collection -->
                         <label class="payment-method-option" for="payMethodCash">
